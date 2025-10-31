@@ -1,4 +1,4 @@
-# 123sales - Sales Management Platform
+# 123vendas - Sales Management Platform
 
 ## Table of Contents
 
@@ -12,7 +12,7 @@
 
 ## Project Goal
 
-**123sales** is an innovative platform that simplifies the management of sales, products, and customers for companies with multiple branches. The solution centralizes product and customer management, allowing inventory and pricing customization per branch. With a robust interface, the system supports the entire sales cycle, from creating and updating orders to canceling and managing inventory.
+**123vendas** is an innovative platform that simplifies the management of sales, products, and customers for companies with multiple branches. The solution centralizes product and customer management, allowing inventory and pricing customization per branch. With a robust interface, the system supports the entire sales cycle, from creating and updating orders to canceling and managing inventory.
 
 This project demonstrates the use of modern technologies and patterns, highlighting the application of DDD, authentication and authorization with JWT, integration with RabbitMQ for sales events, and a scalable, maintainable software architecture.
 
@@ -59,7 +59,7 @@ The project uses **Postgres** as the relational database. The structure is defin
 
 Below is the database diagram used in this project:
 
-![Diagrama\_DB\_123Sales](https://github.com/user-attachments/assets/2bbb0886-3591-4ead-bed4-2d9dc7111b71)
+![Diagrama\_DB\_123Vendas](https://github.com/user-attachments/assets/2bbb0886-3591-4ead-bed4-2d9dc7111b71)
 
 > **Note:** This diagram represents the database structure and may be updated as needed.
 
