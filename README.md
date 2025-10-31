@@ -1,72 +1,79 @@
-# 123vendas - Plataforma de Gerenciamento de Vendas
+# 123vendas - Sales Management Platform
 
-## Sumário
-- [Objetivo do Projeto](#objetivo-do-projeto)
-- [Tecnologias e Padrões Utilizados](#tecnologias-e-padrões-utilizados)
-- [Entidades de Negócio](#entidades-de-negócio)
-- [Estrutura do Banco de Dados](#estrutura-do-banco-de-dados)
-- [Arquitetura de Eventos: Integração com RabbitMQ](#arquitetura-de-eventos-integração-com-rabbitmq)
-- [Execução do Projeto](#execução-do-projeto)
-- [Pontos de Melhoria](#pontos-de-melhoria)
+## Table of Contents
 
-## Objetivo do Projeto
-O **123vendas** é uma plataforma inovadora que facilita o gerenciamento de vendas, produtos e clientes para empresas com múltiplas filiais. A solução centraliza a gestão de produtos e clientes, permitindo personalizar estoque e preços de acordo com cada filial. Com uma interface robusta, o sistema suporta todo o ciclo de vendas, desde a criação e atualização de pedidos até o cancelamento e a administração do estoque.
+* [Project Goal](#project-goal)
+* [Technologies and Patterns Used](#technologies-and-patterns-used)
+* [Business Entities](#business-entities)
+* [Database Structure](#database-structure)
+* [Event Architecture: Integration with RabbitMQ](#event-architecture-integration-with-rabbitmq)
+* [Running the Project](#running-the-project)
+* [Improvement Points](#improvement-points)
 
-Este projeto demonstra o uso de tecnologias e padrões modernos, evidenciando a aplicação de DDD, autenticação e autorização com JWT, integração com RabbitMQ para eventos de vendas e uma arquitetura de software escalável e de fácil manutenção.
+## Project Goal
 
-## Tecnologias e Padrões Utilizados
-- **.NET 8**: Base para desenvolvimento de aplicações escaláveis e robustas.
-- **MediatR**: Utilizado para promover comunicação desacoplada. O padrão foi aplicado especificamente na parte de usuários e autenticação.
-- **Fluent Validations**: Validação de dados de forma fluida e intuitiva.
-- **BCrypt**: Criptografia segura para senhas.
-- **Middleware de Exception**: Gerenciamento centralizado de exceções com respostas HTTP apropriadas.
-- **DDD (Domain-Driven Design)**: Estruturação do sistema com foco no domínio do negócio.
-- **JWT**: Autenticação e autorização baseada em roles.
-- **Serilog**: Logging estruturado para monitoramento e diagnóstico.
-- **Automapper**: Mapeamento automático entre entidades e DTOs.
-- **Microsoft.AspNetCore.Mvc.Versioning**: Gerenciamento de versões da API.
-- **Swagger**: Documentação interativa e acessível.
-- **Entity Framework Core**: Mapeamento objeto-relacional com configurações via IEntityTypeConfiguration.
-- **IQueryable**: Consultas dinâmicas e otimizadas.
-- **RabbitMQ.Client**: Integração com RabbitMQ para comunicação via eventos.
+**123vendas** is an innovative platform that simplifies the management of sales, products, and customers for companies with multiple branches. The solution centralizes product and customer management, allowing inventory and pricing customization per branch. With a robust interface, the system supports the entire sales cycle, from creating and updating orders to canceling and managing inventory.
 
-### Testes Unitários
-- **xUnit**: Framework de testes para .NET, garantindo modularidade e facilidade na escrita de testes.
-- **FluentAssertions**: Sintaxe fluida para asserções, tornando os testes mais legíveis.
-- **Shouldly**: Melhor legibilidade para mensagens de erro em testes.
-- **Bogus**: Geração de dados fake para testes unitários.
-- **NSubstitute**: Mocking de dependências para facilitar testes isolados.
+This project demonstrates the use of modern technologies and patterns, highlighting the application of DDD, authentication and authorization with JWT, integration with RabbitMQ for sales events, and a scalable, maintainable software architecture.
 
-## Entidades de Negócio
-O projeto foi concebido com os princípios do Domain-Driven Design, onde as entidades representam componentes essenciais do domínio de vendas e gestão. Em vez de expor os detalhes das classes, destacam-se os seguintes aspectos:
+## Technologies and Patterns Used
 
-- **Entidades Base**: Todas as entidades compartilham atributos comuns, como identificador único, controle de exclusão lógica e registros de criação/atualização, garantindo rastreabilidade e consistência.
-- **Filiais e Produtos**: As filiais são mapeadas para possibilitar a customização de preços e controle de estoque por unidade. Os produtos são associados às filiais, permitindo a gestão centralizada com flexibilidade local.
-- **Carrinho de Compras**: Modela a seleção de produtos realizada pelos usuários, mantendo a relação entre os itens escolhidos e suas quantidades.
-- **Vendas e Itens de Venda**: Capturam os detalhes de cada transação, incluindo o estado da venda, itens vendidos e a possibilidade de cancelamento parcial ou total.
-- **Usuários**: Armazenam informações de acesso e dados pessoais, definindo os papéis (roles) que determinam as permissões de cada usuário.
+* **.NET 8**: Foundation for building scalable and robust applications.
+* **MediatR**: Used to promote decoupled communication. The pattern was applied specifically to the users and authentication area.
+* **Fluent Validations**: Data validation in a fluent and intuitive way.
+* **BCrypt**: Secure password hashing.
+* **Exception Middleware**: Centralized exception handling with appropriate HTTP responses.
+* **DDD (Domain-Driven Design)**: Structuring the system with a focus on the business domain.
+* **JWT**: Role-based authentication and authorization.
+* **Serilog**: Structured logging for monitoring and diagnostics.
+* **Automapper**: Automatic mapping between entities and DTOs.
+* **Microsoft.AspNetCore.Mvc.Versioning**: API version management.
+* **Swagger**: Interactive and accessible documentation.
+* **Entity Framework Core**: Object-relational mapping with configurations via `IEntityTypeConfiguration`.
+* **IQueryable**: Dynamic and optimized queries.
+* **RabbitMQ.Client**: Integration with RabbitMQ for event-based communication.
 
-Cada entidade foi cuidadosamente desenhada para refletir as regras e necessidades do negócio, estabelecendo relações claras e integridade no modelo de dados.
+### Unit Tests
 
-## Estrutura do Banco de Dados
-O projeto utiliza o **Postgres** como banco de dados relacional. A estrutura é definida utilizando o **Entity Framework Core** com configurações modulares via `IEntityTypeConfiguration`, promovendo um design limpo e organizado.
+* **xUnit**: Testing framework for .NET, ensuring modularity and ease of writing tests.
+* **FluentAssertions**: Fluent syntax for assertions, making tests more readable.
+* **Shouldly**: Better readability for test error messages.
+* **Bogus**: Fake data generation for unit tests.
+* **NSubstitute**: Dependency mocking to facilitate isolated testing.
 
-Abaixo está o diagrama do banco de dados utilizado neste projeto:
+## Business Entities
 
-![Diagrama_DB_123Vendas](https://github.com/user-attachments/assets/2bbb0886-3591-4ead-bed4-2d9dc7111b71)
-> **Nota:** Este diagrama representa a estrutura do banco e pode ser atualizado conforme necessário.
+The project was designed with Domain-Driven Design principles, where entities represent essential components of the sales and management domain. Instead of exposing class details, the following aspects are highlighted:
 
-O projeto possui um sistema de seed controlado por uma **feature flag** chamada:
+* **Base Entities**: All entities share common attributes such as a unique identifier, soft-delete control, and creation/update records, ensuring traceability and consistency.
+* **Branches and Products**: Branches are mapped to allow price customization and inventory control per unit. Products are associated with branches, enabling centralized management with local flexibility.
+* **Shopping Cart**: Models the selection of products made by users, keeping the relationship between chosen items and their quantities.
+* **Sales and Sale Items**: Capture the details of each transaction, including the sale status, items sold, and the possibility of partial or full cancellation.
+* **Users**: Store access information and personal data, defining roles that determine each user's permissions.
+
+Each entity was carefully designed to reflect business rules and needs, establishing clear relationships and integrity in the data model.
+
+## Database Structure
+
+The project uses **Postgres** as the relational database. The structure is defined using **Entity Framework Core** with modular configurations via `IEntityTypeConfiguration`, promoting a clean and organized design.
+
+Below is the database diagram used in this project:
+
+![Diagrama\_DB\_123Vendas](https://github.com/user-attachments/assets/2bbb0886-3591-4ead-bed4-2d9dc7111b71)
+
+> **Note:** This diagram represents the database structure and may be updated as needed.
+
+The project has a seed system controlled by a **feature flag** called:
 
 ```
 SEED_DATABASE_FLAG
 ```
 
-Essa flag está configurada no arquivo `launchSettings.json`, dentro da seção `environmentVariables`, com valor padrão `"false"`. Para ativar a seed, basta alterar o valor para `"true"`. A aplicação irá popular automaticamente o banco de dados com dados iniciais, desde que as tabelas estejam vazias.
+This flag is configured in the `launchSettings.json` file, inside the `environmentVariables` section, with the default value `"false"`. To enable seeding, simply change the value to `"true"`. The application will automatically populate the database with initial data, provided the tables are empty.
 
 ---
 
-No arquivo **PostgreDbContext**, o construtor garante que o banco de dados será criado automaticamente se ainda não existir:
+In the **PostgreDbContext** file, the constructor ensures the database will be created automatically if it does not exist:
 
 ```csharp
 public PostgreDbContext(DbContextOptions<PostgreDbContext> options) : base(options)
@@ -75,14 +82,17 @@ public PostgreDbContext(DbContextOptions<PostgreDbContext> options) : base(optio
 }
 ```
 
-## Arquitetura de Eventos: Integração com RabbitMQ
-A aplicação integra-se ao **RabbitMQ** utilizando uma arquitetura de Pub/Sub, permitindo o processamento distribuído e independente dos eventos de vendas. A exchange **ex_sale** (tipo **direct**) possibilita que os consumidores criem filas customizadas e se vinculem às routing keys específicas dos eventos de seu interesse.
+## Event Architecture: Integration with RabbitMQ
 
-### Detalhes dos Eventos
-- **SaleCancelledEvent**  
-  - **Routing Key**: `SaleCancelledEvent`  
-  - **Descrição**: Disparado quando uma venda é cancelada.  
-  - **Payload Exemplo**:
+The application integrates with **RabbitMQ** using a Pub/Sub architecture, allowing distributed and independent processing of sales events. The exchange **ex_sale** (type **direct**) enables consumers to create custom queues and bind to specific routing keys for the events they are interested in.
+
+### Event Details
+
+* **SaleCancelledEvent**
+
+  * **Routing Key**: `SaleCancelledEvent`
+  * **Description**: Fired when a sale is canceled.
+  * **Sample Payload**:
 
     ```json
     {
@@ -91,11 +101,12 @@ A aplicação integra-se ao **RabbitMQ** utilizando uma arquitetura de Pub/Sub, 
     }
     ```
 
-- **SaleCreatedEvent**  
-  - **Routing Key**: `SaleCreatedEvent`  
-  - **Descrição**: Disparado quando uma nova venda é criada.  
-  - **Payload Exemplo**:
-    
+* **SaleCreatedEvent**
+
+  * **Routing Key**: `SaleCreatedEvent`
+  * **Description**: Fired when a new sale is created.
+  * **Sample Payload**:
+
     ```json
     {
         "Id": 1,
@@ -103,11 +114,12 @@ A aplicação integra-se ao **RabbitMQ** utilizando uma arquitetura de Pub/Sub, 
     }
     ```
 
-- **SaleItemCancelledEvent**  
-  - **Routing Key**: `SaleItemCancelledEvent`  
-  - **Descrição**: Disparado ao cancelar um item específico de uma venda.  
-  - **Payload Exemplo**:
-    
+* **SaleItemCancelledEvent**
+
+  * **Routing Key**: `SaleItemCancelledEvent`
+  * **Description**: Fired when a specific item of a sale is canceled.
+  * **Sample Payload**:
+
     ```json
     {
         "SaleId": 1,
@@ -117,11 +129,12 @@ A aplicação integra-se ao **RabbitMQ** utilizando uma arquitetura de Pub/Sub, 
     }
     ```
 
-- **SaleUpdatedEvent**  
-  - **Routing Key**: `SaleUpdatedEvent`  
-  - **Descrição**: Disparado ao atualizar uma venda existente.  
-  - **Payload Exemplo**:
-    
+* **SaleUpdatedEvent**
+
+  * **Routing Key**: `SaleUpdatedEvent`
+  * **Description**: Fired when an existing sale is updated.
+  * **Sample Payload**:
+
     ```json
     {
         "Id": 1,
@@ -129,11 +142,11 @@ A aplicação integra-se ao **RabbitMQ** utilizando uma arquitetura de Pub/Sub, 
     }
     ```
 
-Essa arquitetura garante que cada serviço consuma apenas os eventos relevantes, otimizando a performance e facilitando a escalabilidade.
+This architecture ensures that each service consumes only relevant events, optimizing performance and easing scalability.
 
-## Execução do Projeto
+## Running the Project
 
-Para executar o projeto, é necessário configurar as seguintes variáveis de ambiente, que definem o comportamento e as conexões com os serviços externos utilizados pela aplicação. **Observação:** Para execução local, essas variáveis são configuradas no arquivo `launchSettings.json`.
+To run the project, you need to configure the following environment variables, which define behavior and connections to the external services used by the application. **Note:** For local execution, these variables are configured in the `launchSettings.json` file.
 
 ```json
 "environmentVariables": {
@@ -148,41 +161,47 @@ Para executar o projeto, é necessário configurar as seguintes variáveis de am
 }
 ```
 
-### Descrição de Cada Variável
+### Description of Each Variable
 
-- **ASPNETCORE_ENVIRONMENT**: Define o ambiente em que a aplicação será executada (por exemplo, Development, Staging ou Production). Isso influencia configurações específicas, como logging e detalhes de erros.
-- **JWT_SECRETKEY**: Chave secreta utilizada para assinar e validar os tokens JWT, garantindo a integridade e a segurança do mecanismo de autenticação.
-- **POSTGRES_CONNECTION_STRING**: String de conexão para o banco de dados Postgres, configurando o endereço do servidor, nome do banco de dados, credenciais de acesso e outras opções necessárias para a conexão.
-- **RABBITMQ_HOSTNAME**: Nome do host ou endereço IP do servidor RabbitMQ, utilizado para publicar e consumir eventos.
-- **RABBITMQ_USERNAME**: Nome de usuário para autenticação no servidor RabbitMQ.
-- **RABBITMQ_VIRTUALHOST**: Virtual host no RabbitMQ, permitindo a separação lógica de ambientes ou aplicações no mesmo servidor.
-- **RABBITMQ_PASSWORD**: Senha correspondente ao usuário definido para acessar o RabbitMQ.
-- **SEED_DATABASE_FLAG**: Flag utilizada para controlar a execução de seeds de dados iniciais no banco, útil para ambientes de desenvolvimento e testes.
+* **ASPNETCORE_ENVIRONMENT**: Defines the environment in which the application will run (for example, Development, Staging, or Production). This influences specific configurations like logging and error details.
+* **JWT_SECRETKEY**: Secret key used to sign and validate JWT tokens, ensuring the integrity and security of the authentication mechanism.
+* **POSTGRES_CONNECTION_STRING**: Connection string for the Postgres database, configuring server address, database name, access credentials, and other connection options.
+* **RABBITMQ_HOSTNAME**: Hostname or IP address of the RabbitMQ server, used to publish and consume events.
+* **RABBITMQ_USERNAME**: Username for authentication on the RabbitMQ server.
+* **RABBITMQ_VIRTUALHOST**: Virtual host in RabbitMQ, allowing logical separation of environments or applications on the same server.
+* **RABBITMQ_PASSWORD**: Password corresponding to the user defined to access RabbitMQ.
+* **SEED_DATABASE_FLAG**: Flag used to control the execution of initial data seeds in the database, useful for development and testing environments.
 
-> **Observações:**
-> - **Postgres**: Certifique-se de ter o Postgres instalado e devidamente configurado na sua máquina.
-> - **PostgreDbContext**: O construtor do `PostgreDbContext` contém a chamada `base.Database.EnsureCreated();`, garantindo que o banco de dados seja criado automaticamente se ainda não existir.
-> - **JWT Secret Key**: A chave secreta do JWT pode ser alterada conforme necessário no arquivo `launchSettings.json`.
+> **Notes:**
+>
+> * **Postgres**: Make sure Postgres is installed and properly configured on your machine.
+> * **PostgreDbContext**: The constructor of `PostgreDbContext` contains the call `base.Database.EnsureCreated();`, ensuring the database will be created automatically if it does not exist.
+> * **JWT Secret Key**: The JWT secret key can be changed as needed in the `launchSettings.json` file.
 
-### Passos para Iniciar o Projeto
+### Steps to Start the Project
 
-1. Clone o repositório:
+1. Clone the repository:
+
    ```bash
    git clone https://github.com/LucasFernandes0101/123vendas-server.git
    ```
-2. Navegue até a pasta do projeto:
+2. Navigate to the project folder:
+
    ```bash
    cd 123vendas-server
    ```
-3. Execute o projeto:
+3. Run the project:
+
    ```bash
    dotnet run
    ```
-   
-## Pontos de Melhoria
-Para aprimorar a segurança, a escalabilidade e a manutenibilidade do projeto, considere os seguintes pontos:
-- **Key Vault**: Migrar a secret key do JWT, bem como as credenciais do banco de dados e do RabbitMQ, para um Key Vault. Dessa forma, informações sensíveis são gerenciadas com segurança.
-- **Configurações Centralizadas**: Adotar um gerenciador de configurações centralizado para facilitar a manutenção e o deploy em diferentes ambientes.
-- **Testes Automatizados**: Expandir a cobertura dos testes unitários, funcionais e de integração, garantindo a robustez e confiabilidade do sistema.
-- **Monitoramento e Logging**: Integrar ferramentas avançadas de monitoramento e logging para identificar e resolver problemas de forma proativa.
-- **Escalabilidade do Pub/Sub**: Revisar e otimizar a arquitetura de eventos para suportar um volume maior de transações e múltiplos serviços consumidores.
+
+## Improvement Points
+
+To enhance the security, scalability, and maintainability of the project, consider the following points:
+
+* **Key Vault**: Move the JWT secret key, as well as database and RabbitMQ credentials, to a Key Vault. This way, sensitive information is managed securely.
+* **Centralized Configuration**: Adopt a centralized configuration manager to ease maintenance and deployment across different environments.
+* **Automated Tests**: Expand coverage for unit, functional, and integration tests to ensure system robustness and reliability.
+* **Monitoring and Logging**: Integrate advanced monitoring and logging tools to proactively identify and resolve issues.
+* **Pub/Sub Scalability**: Review and optimize the event architecture to support higher transaction volumes and multiple consumer services.
