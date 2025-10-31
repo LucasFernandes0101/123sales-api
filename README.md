@@ -183,12 +183,12 @@ To run the project, you need to configure the following environment variables, w
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/LucasFernandes0101/123vendas-server.git
+   git clone https://github.com/LucasFernandes0101/123sales-server.git
    ```
 2. Navigate to the project folder:
 
    ```bash
-   cd 123vendas-server
+   cd 123sales-server
    ```
 3. Run the project:
 
