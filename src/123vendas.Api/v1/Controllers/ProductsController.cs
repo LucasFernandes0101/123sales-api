@@ -38,7 +38,7 @@ public class ProductsController(IProductService productService) : ControllerBase
             request.Size,
             request.OrderByClause);
 
-        if (pagedResult?.Items is not null && pagedResult.Items.Any())
+        if (pagedResult?.Items is not null && pagedResult.Items.Count > 0)
             return Ok(new PagedResponseDTO<ProductGetResponseDTO>(pagedResult.Items.ToDTO(), pagedResult.Total, request.Page, request.Size));
 
         return NoContent();
@@ -98,7 +98,7 @@ public class ProductsController(IProductService productService) : ControllerBase
             maxResults: request.Size,
             orderByClause: request.OrderByClause);
 
-        if (pagedResult?.Items is not null && pagedResult.Items.Any())
+        if (pagedResult?.Items is not null && pagedResult.Items.Count > 0)
             return Ok(new PagedResponseDTO<ProductGetResponseDTO>(pagedResult.Items.ToDTO(), pagedResult.Total, request.Page, request.Size));
 
         return NoContent();

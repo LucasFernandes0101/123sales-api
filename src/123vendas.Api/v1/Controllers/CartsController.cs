@@ -34,7 +34,7 @@ public class CartsController(ICartService cartService) : ControllerBase
             request.Size,
             request.OrderByClause);
 
-        if (pagedResult?.Items is not null && pagedResult.Items.Any())
+        if (pagedResult?.Items is not null && pagedResult.Items.Count > 0)
             return Ok(new PagedResponseDTO<CartGetResponseDTO>(pagedResult.Items.ToDTO(), pagedResult.Total, request.Page, request.Size));
 
         return NoContent();

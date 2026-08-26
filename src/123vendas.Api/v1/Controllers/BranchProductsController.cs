@@ -36,7 +36,7 @@ public class BranchProductsController(IBranchProductService branchProductService
             request.Size,
             request.OrderByClause);
 
-        if (pagedResult?.Items is not null && pagedResult.Items.Any())
+        if (pagedResult?.Items is not null && pagedResult.Items.Count > 0)
             return Ok(new PagedResponseDTO<BranchProductGetResponseDTO>(pagedResult.Items.ToDTO(), pagedResult.Total, request.Page, request.Size));
 
         return NoContent();
