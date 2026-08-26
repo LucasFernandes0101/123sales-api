@@ -1,0 +1,7 @@
+<Solution>
+  <Project Path="src\123vendas.Api\123vendas.Api.csproj" />
+  <Project Path="src\123vendas.Application\123vendas.Application.csproj" />
+  <Project Path="src\123vendas.Domain\123vendas.Domain.csproj" />
+  <Project Path="src\123vendas.Infrastructure\123vendas.Infrastructure.csproj" />
+  <Project Path="tests\123vendas.Unit\123vendas.Unit.csproj" />
+</Solution>
