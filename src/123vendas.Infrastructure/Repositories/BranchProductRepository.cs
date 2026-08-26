@@ -2,7 +2,6 @@
 using _123vendas.Domain.Enums;
 using _123vendas.Domain.Interfaces.Repositories;
 using _123vendas.Infrastructure.Contexts;
-using _123vendas.Infrastructure.Scripts;
 using Microsoft.EntityFrameworkCore;
 using System.Diagnostics.CodeAnalysis;
 
@@ -17,9 +16,10 @@ public class BranchProductRepository : BaseRepository<BranchProduct>, IBranchPro
 
     public async Task UpdateByProductIdAsync(int productId, string productName, ProductCategory productCategory)
     {
-        await _dbContext.Database.ExecuteSqlRawAsync(SqlScripts.UpdateBranchProductsByProductId, 
-                                                     productName, 
-                                                     (int)productCategory, 
-                                                     productId);
+        await _dbContext.Set<BranchProduct>()
+            .Where(bp => bp.ProductId == productId)
+            .ExecuteUpdateAsync(s => s
+                .SetProperty(bp => bp.ProductTitle, productName)
+                .SetProperty(bp => bp.ProductCategory, productCategory));
     }
 }

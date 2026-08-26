@@ -17,19 +17,4 @@
     <ProjectReference Include="..\123vendas.Domain\123vendas.Domain.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Compile Update="Scripts\SqlScripts.Designer.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>SqlScripts.resx</DependentUpon>
-    </Compile>
-  </ItemGroup>
-
-  <ItemGroup>
-    <EmbeddedResource Update="Scripts\SqlScripts.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>SqlScripts.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
-  </ItemGroup>
-
 </Project>
