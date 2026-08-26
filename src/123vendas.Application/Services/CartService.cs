@@ -4,36 +4,21 @@ using _123vendas.Domain.Exceptions;
 using _123vendas.Domain.Interfaces.Repositories;
 using _123vendas.Domain.Interfaces.Services;
 using FluentValidation;
-using Microsoft.Extensions.Logging;
 using System.Linq.Expressions;
 
 namespace _123vendas.Application.Services;
 
-public class CartService : ICartService
+public class CartService(
+    ICartRepository repository,
+    IValidator<Cart> validator) : ICartService
 {
-    private readonly ICartRepository _repository;
-    private readonly ICartProductRepository _cartProductRepository;
-    private readonly IValidator<Cart> _validator;
-    private readonly ILogger<CartService> _logger;
-
-    public CartService(ICartRepository repository,
-                       ICartProductRepository cartProductRepository,
-                       IValidator<Cart> validator,
-                       ILogger<CartService> logger)
-    {
-        _repository = repository;
-        _cartProductRepository = cartProductRepository;
-        _validator = validator;
-        _logger = logger;
-    }
-
     public async Task<Cart> CreateAsync(Cart request)
     {
         try
         {
             await ValidateCartAsync(request);
 
-            return await _repository.AddAsync(request);
+            return await repository.AddAsync(request);
         }
         catch (Exception ex) when (ex is not ValidationException)
         {
@@ -47,7 +32,7 @@ public class CartService : ICartService
         {
             var cart = await FindCartOrThrowAsync(id);
 
-            await _repository.DeleteAsync(cart);
+            await repository.DeleteAsync(cart);
         }
         catch (BaseException)
         {
@@ -59,13 +44,14 @@ public class CartService : ICartService
         }
     }
 
-    public async Task<PagedResult<Cart>> GetAllAsync(int? id = default,
-                                                     int? userId = default,
-                                                     DateTimeOffset? minDate = default,
-                                                     DateTimeOffset? maxDate = default,
-                                                     int page = 1,
-                                                     int maxResults = 10,
-                                                     string? orderByClause = default)
+    public async Task<PagedResult<Cart>> GetAllAsync(
+        int? id = default,
+        int? userId = default,
+        DateTimeOffset? minDate = default,
+        DateTimeOffset? maxDate = default,
+        int page = 1,
+        int maxResults = 10,
+        string? orderByClause = default)
     {
         try
         {
@@ -74,7 +60,7 @@ public class CartService : ICartService
 
             var criteria = BuildCriteria(id, userId, minDate, maxDate);
 
-            var result = await _repository.GetAsync(page, maxResults, criteria, orderByClause);
+            var result = await repository.GetAsync(page, maxResults, criteria, orderByClause);
 
             return result;
         }
@@ -92,7 +78,7 @@ public class CartService : ICartService
     {
         try
         {
-            var cart = await _repository.GetWithProductsByIdAsync(id);
+            var cart = await repository.GetWithProductsByIdAsync(id);
 
             return cart;
         }
@@ -110,7 +96,7 @@ public class CartService : ICartService
 
             await ValidateCartAsync(cart);
 
-            return await _repository.UpdateAsync(cart);
+            return await repository.UpdateAsync(cart);
         }
         catch (Exception ex) when (ex is ValidationException || ex is BaseException)
         {
@@ -133,13 +119,13 @@ public class CartService : ICartService
         return existingCart;
     }
 
-    private void UpdateAndRemoveProducts(Cart existingCart, List<CartProduct>? updatedProducts)
+    private static void UpdateAndRemoveProducts(Cart existingCart, List<CartProduct>? updatedProducts)
     {
-        updatedProducts ??= new List<CartProduct>();
+        updatedProducts ??= [];
 
         foreach (var updatedProduct in updatedProducts)
         {
-            var existingProduct = existingCart.Products?.FirstOrDefault(cp => 
+            var existingProduct = existingCart.Products?.Find(cp => 
                                     cp.ProductId == updatedProduct.ProductId);
 
             if (existingProduct is not null)
@@ -154,15 +140,15 @@ public class CartService : ICartService
         RemoveProductsNotInUpdatedList(existingCart, updatedProducts);
     }
 
-    private void AddNewProductToCart(Cart existingCart, CartProduct updatedProduct)
+    private static void AddNewProductToCart(Cart existingCart, CartProduct updatedProduct)
     {
-        existingCart.Products ??= new List<CartProduct>();
+        existingCart.Products ??= [];
 
         updatedProduct.CartId = existingCart.Id;
         existingCart.Products.Add(updatedProduct);
     }
 
-    private void RemoveProductsNotInUpdatedList(Cart existingCart, List<CartProduct> updatedProducts)
+    private static void RemoveProductsNotInUpdatedList(Cart existingCart, List<CartProduct> updatedProducts)
     {
         if (existingCart.Products is null) return;
 
@@ -174,47 +160,34 @@ public class CartService : ICartService
             existingCart.Products.Remove(product);
     }
 
-    private void UpdateCartProperties(Cart existingCart, Cart request)
+    private static void UpdateCartProperties(Cart existingCart, Cart request)
     {
         existingCart.UserId = request.UserId;
         existingCart.Date = request.Date;
     }
 
-    private Expression<Func<Cart, bool>> BuildCriteria(int? id,
-                                                       int? userId,
-                                                       DateTimeOffset? minDate,
-                                                       DateTimeOffset? maxDate)
-    {
-        return b =>
+    private static Expression<Func<Cart, bool>> BuildCriteria(
+        int? id,
+        int? userId,
+        DateTimeOffset? minDate,
+        DateTimeOffset? maxDate)
+        => b =>
             (!id.HasValue || b.Id == id.Value) &&
             (!userId.HasValue || b.UserId == userId) &&
             (!minDate.HasValue || b.Date >= minDate.Value) &&
             (!maxDate.HasValue || b.Date <= maxDate.Value);
-    }
 
     private async Task<Cart> FindCartOrThrowAsync(int id)
-    {
-        var cart = await _repository.GetByIdAsync(id);
-
-        if (cart is null)
-            throw new NotFoundException($"Cart with ID {id} not found.");
-
-        return cart;
-    }
+        => await repository.GetByIdAsync(id)
+            ?? throw new NotFoundException($"Cart with ID {id} not found.");
 
     private async Task<Cart> FindCartWithProductsOrThrowAsync(int id)
-    {
-        var cart = await _repository.GetWithProductsByIdAsync(id);
-
-        if (cart is null)
-            throw new NotFoundException($"Cart with ID {id} not found.");
-
-        return cart;
-    }
+        => await repository.GetWithProductsByIdAsync(id)
+            ?? throw new NotFoundException($"Cart with ID {id} not found.");
 
     private async Task ValidateCartAsync(Cart cart)
     {
-        var validationResult = await _validator.ValidateAsync(cart);
+        var validationResult = await validator.ValidateAsync(cart);
 
         if (!validationResult.IsValid)
             throw new ValidationException(validationResult.Errors);

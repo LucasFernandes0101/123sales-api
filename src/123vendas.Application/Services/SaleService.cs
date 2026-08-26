@@ -12,31 +12,14 @@ using System.Linq.Expressions;
 
 namespace _123vendas.Application.Services;
 
-public class SaleService : ISaleService
+public class SaleService(
+    ISaleRepository repository,
+    IBranchProductRepository branchProductRepository,
+    IValidator<Sale> validator,
+    IRabbitMQIntegration rabbitMQIntegration,
+    ILogger<SaleService> logger) : ISaleService
 {
     private const int MAX_ITEMS_PER_SALE = 20;
-
-    private readonly ISaleRepository _repository;
-    private readonly ISaleItemRepository _saleItemRepository;
-    private readonly IBranchProductRepository _branchProductRepository;
-    private readonly IValidator<Sale> _validator;
-    private readonly IRabbitMQIntegration _rabbitMQIntegration;
-    private readonly ILogger<SaleService> _logger;
-
-    public SaleService(ISaleRepository repository,
-                       ISaleItemRepository saleItemRepository,
-                       IBranchProductRepository branchProductRepository,
-                       IValidator<Sale> validator,
-                       IRabbitMQIntegration rabbitMQIntegration,
-                       ILogger<SaleService> logger)
-    {
-        _repository = repository;
-        _saleItemRepository = saleItemRepository;
-        _branchProductRepository = branchProductRepository;
-        _validator = validator;
-        _rabbitMQIntegration = rabbitMQIntegration;
-        _logger = logger;
-    }
 
     public async Task<Sale> CreateAsync(Sale request)
     {
@@ -48,14 +31,14 @@ public class SaleService : ISaleService
                 UserId = request.UserId,
                 Date = DateTime.UtcNow,
                 Status = SaleStatus.Created,
-                Items = new List<SaleItem>()
+                Items = []
             };
 
             await ProcessItemsAsync(sale, request.Items!);
 
             await ValidateSaleAsync(sale);
 
-            var savedSale = await _repository.AddAsync(sale);
+            var savedSale = await repository.AddAsync(sale);
 
             await UpdateStockQuantitiesAsync(savedSale.Items!, savedSale.BranchId);
 
@@ -82,10 +65,9 @@ public class SaleService : ISaleService
             if (sale.Status == SaleStatus.Canceled)
                 throw new SaleAlreadyCanceledException($"Cannot cancel an item from a sale that is already canceled.");
 
-            var saleItem = sale?.Items?.FirstOrDefault(i => i.Sequence == sequence);
-
-            if (saleItem is null)
-                throw new NotFoundException($"Sale item sequence {sequence} not found.");
+            var saleItem = sale?.Items?.Find(item => 
+                item.Sequence == sequence)
+                ?? throw new NotFoundException($"Sale item sequence {sequence} not found.");
 
             ValidateItemForCancellation(saleItem);
 
@@ -93,7 +75,7 @@ public class SaleService : ISaleService
 
             sale!.TotalAmount = CalculateTotalAmount(sale.Items!);
 
-            await _repository.UpdateAsync(sale);
+            await repository.UpdateAsync(sale);
 
             await PublishSaleMessageAsync(new SaleItemCancelledEvent(saleItem));
 
@@ -115,10 +97,9 @@ public class SaleService : ISaleService
         {
             var sale = await GetSaleWithItemsOrThrowAsync(saleId);
 
-            var saleItem = sale?.Items?.FirstOrDefault(i => i.Sequence == sequence);
-
-            if (saleItem is null)
-                throw new NotFoundException($"Sale item sequence {sequence} not found in sale ID {saleId}.");
+            var saleItem = sale?.Items?.Find(item => 
+                item.Sequence == sequence)
+                ?? throw new NotFoundException($"Sale item sequence {sequence} not found in sale ID {saleId}.");
 
             return saleItem;
         }
@@ -132,15 +113,16 @@ public class SaleService : ISaleService
         }
     }
 
-    public async Task<PagedResult<Sale>> GetAllAsync(int? id = default,
-                                                     int? branchId = default,
-                                                     int? userId = default,
-                                                     SaleStatus? status = default,
-                                                     DateTimeOffset? startDate = default,
-                                                     DateTimeOffset? endDate = default,
-                                                     int page = 1,
-                                                     int maxResults = 10,
-                                                     string? orderByClause = default)
+    public async Task<PagedResult<Sale>> GetAllAsync(
+        int? id = default,
+        int? branchId = default,
+        int? userId = default,
+        SaleStatus? status = default,
+        DateTimeOffset? startDate = default,
+        DateTimeOffset? endDate = default,
+        int page = 1,
+        int maxResults = 10,
+        string? orderByClause = default)
     {
         try
         {
@@ -149,7 +131,7 @@ public class SaleService : ISaleService
 
             var criteria = BuildCriteria(id, branchId, userId, status, startDate, endDate);
 
-            var result = await _repository.GetAsync(page, maxResults, criteria, orderByClause);
+            var result = await repository.GetAsync(page, maxResults, criteria, orderByClause);
 
             return result;
         }
@@ -167,7 +149,7 @@ public class SaleService : ISaleService
     {
         try
         {
-            var sale = await _repository.GetWithItemsByIdAsync(id);
+            var sale = await repository.GetWithItemsByIdAsync(id);
 
             return sale;
         }
@@ -193,17 +175,17 @@ public class SaleService : ISaleService
 
             if (request.Items is not null && request.Items.Count > 0)
             {
-                existingSale.Items ??= new List<SaleItem>();
+                existingSale.Items ??= [];
                 existingSale.Items.Clear();
 
                 await ProcessItemsAsync(existingSale, request.Items);
             }
 
-            existingSale.TotalAmount = CalculateTotalAmount(existingSale.Items ?? new List<SaleItem>());
+            existingSale.TotalAmount = CalculateTotalAmount(existingSale.Items ?? []);
 
             await ValidateSaleAsync(existingSale);
 
-            await _repository.UpdateAsync(existingSale);
+            await repository.UpdateAsync(existingSale);
 
             await PublishSaleMessageAsync(new SaleUpdatedEvent(existingSale));
 
@@ -223,10 +205,8 @@ public class SaleService : ISaleService
     {
         try
         {
-            var sale = await _repository.GetByIdAsync(saleId);
-
-            if (sale is null)
-                throw new NotFoundException($"Sale with ID {saleId} not found.");
+            var sale = await repository.GetByIdAsync(saleId)
+                ?? throw new NotFoundException($"Sale with ID {saleId} not found.");
 
             if (sale.Status == SaleStatus.Canceled)
                 throw new SaleAlreadyCanceledException($"This sale is already canceled.");
@@ -234,7 +214,7 @@ public class SaleService : ISaleService
             sale.Status = SaleStatus.Canceled;
             sale.CancelledAt = DateTimeOffset.Now;
 
-            await _repository.UpdateAsync(sale);
+            await repository.UpdateAsync(sale);
 
             await PublishSaleMessageAsync(new SaleCancelledEvent(sale));
 
@@ -256,7 +236,7 @@ public class SaleService : ISaleService
         {
             var existingSale = await GetSaleOrThrowAsync(saleId);
 
-            await _repository.DeleteAsync(existingSale);
+            await repository.DeleteAsync(existingSale);
         }
         catch (BaseException)
         {
@@ -310,13 +290,13 @@ public class SaleService : ISaleService
         return saleItem;
     }
 
-    private decimal CalculateItemPrice(SaleItem item)
+    private static decimal CalculateItemPrice(SaleItem item)
     {
         var discountMultiplier = 1 - (item.Discount / 100 ?? 0);
         return item.UnitPrice * item.Quantity * discountMultiplier;
     }
 
-    private decimal CalculateItemDiscount(SaleItem item)
+    private static decimal CalculateItemDiscount(SaleItem item)
     {
         if (item.Quantity < 4)
             return 0;
@@ -337,99 +317,83 @@ public class SaleService : ISaleService
             var branchProduct = await GetBranchProductOrThrowAsync(branchId, item.ProductId);
 
             branchProduct.StockQuantity -= item.Quantity;
-            await _branchProductRepository.UpdateAsync(branchProduct);
+            await branchProductRepository.UpdateAsync(branchProduct);
         }
     }
 
     #endregion
 
-    private void ValidateForUpdate(Sale sale)
+    private static void ValidateForUpdate(Sale sale)
     {
         if (sale.Status == SaleStatus.Canceled)
             throw new SaleAlreadyCanceledException("Cannot update a canceled sale.");
     }
 
-    private void ValidateItemForCancellation(SaleItem saleItem)
+    private static void ValidateItemForCancellation(SaleItem saleItem)
     {
         if (saleItem.IsCancelled)
             throw new SaleItemAlreadyCanceledException("This item is already cancelled.");
     }
 
-    private void CancelItem(SaleItem saleItem)
+    private static void CancelItem(SaleItem saleItem)
     {
         saleItem.IsCancelled = true;
         saleItem.CancelledAt = DateTimeOffset.Now;
     }
 
-    private decimal CalculateTotalAmount(List<SaleItem> items)
-    {
-        return items.Where(item => !item.IsCancelled).Sum(item => item.Price);
-    }
+    private static decimal CalculateTotalAmount(List<SaleItem> items)
+        => items.Where(item => !item.IsCancelled).Sum(item => item.Price);
 
     private async Task<Sale> GetSaleOrThrowAsync(int saleId)
-    {
-        var sale = await _repository.GetByIdAsync(saleId);
-        if (sale is null)
-            throw new NotFoundException($"Sale with ID {saleId} not found.");
-
-        return sale;
-    }
+        => await repository.GetByIdAsync(saleId)
+            ?? throw new NotFoundException($"Sale with ID {saleId} not found.");
 
     private async Task<Sale> GetSaleWithItemsOrThrowAsync(int id)
-    {
-        var sale = await _repository.GetWithItemsByIdAsync(id);
-
-        if (sale is null)
-            throw new NotFoundException($"Sale with ID {id} not found.");
-
-        return sale;
-    }
+        => await repository.GetWithItemsByIdAsync(id)
+            ?? throw new NotFoundException($"Sale with ID {id} not found.");
 
     private async Task PublishSaleMessageAsync(BaseEvent @event)
     {
         try
         {
-            await _rabbitMQIntegration.PublishMessageAsync(@event);
+            await rabbitMQIntegration.PublishMessageAsync(@event);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, $"An error occurred while publishing event {@event.GetType().Name}");
+            logger.LogError(ex, "An error occurred while publishing event {EventType}", @event.GetType().Name);
         }
     }
 
     private async Task<BranchProduct> GetBranchProductOrThrowAsync(int branchId, int productId)
     {
-        var branchProduct = (await _branchProductRepository.GetAsync(1, 1,
-            p => p.IsActive && p.BranchId == branchId && p.ProductId == productId))
-            .Items?.FirstOrDefault();
+        var result = await branchProductRepository.GetAsync(1, 1,
+            p => p.IsActive && p.BranchId == branchId && p.ProductId == productId);
 
-        if (branchProduct is null)
-            throw new NotFoundException($"Product ID {productId} not found or inactive in branch ID {branchId}.");
-
-        return branchProduct;
+        return result.Items.Count > 0
+            ? result.Items[0]
+            : throw new NotFoundException($"Product ID {productId} not found or inactive in branch ID {branchId}.");
     }
 
     private async Task ValidateSaleAsync(Sale sale)
     {
-        var validationResult = await _validator.ValidateAsync(sale);
+        var validationResult = await validator.ValidateAsync(sale);
 
         if (!validationResult.IsValid)
             throw new ValidationException(validationResult.Errors);
     }
 
-    private Expression<Func<Sale, bool>> BuildCriteria(int? id,
-                                                       int? branchId,
-                                                       int? userId,
-                                                       SaleStatus? status,
-                                                       DateTimeOffset? startDate,
-                                                       DateTimeOffset? endDate)
-    {
-        return b =>
+    private static Expression<Func<Sale, bool>> BuildCriteria(
+        int? id,
+        int? branchId,
+        int? userId,
+        SaleStatus? status,
+        DateTimeOffset? startDate,
+        DateTimeOffset? endDate)
+        => b =>
             (!id.HasValue || b.Id == id.Value) &&
             (!branchId.HasValue || b.BranchId == branchId.Value) &&
             (!userId.HasValue || b.UserId == userId.Value) &&
             (!status.HasValue || b.Status == status.Value) &&
             (!startDate.HasValue || b.CreatedAt >= startDate.Value) &&
             (!endDate.HasValue || b.CreatedAt <= endDate.Value);
-    }
 }

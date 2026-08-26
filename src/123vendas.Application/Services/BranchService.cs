@@ -4,33 +4,21 @@ using _123vendas.Domain.Exceptions;
 using _123vendas.Domain.Interfaces.Repositories;
 using _123vendas.Domain.Interfaces.Services;
 using FluentValidation;
-using Microsoft.Extensions.Logging;
 using System.Linq.Expressions;
 
 namespace _123vendas.Application.Services;
 
-public class BranchService : IBranchService
+public class BranchService(
+    IBranchRepository repository,
+    IValidator<Branch> validator) : IBranchService
 {
-    private readonly IBranchRepository _repository;
-    private readonly IValidator<Branch> _validator;
-    private readonly ILogger<BranchService> _logger;
-
-    public BranchService(IBranchRepository repository,
-                         IValidator<Branch> validator,
-                         ILogger<BranchService> logger)
-    {
-        _repository = repository;
-        _validator = validator;
-        _logger = logger;
-    }
-
     public async Task<Branch> CreateAsync(Branch request)
     {
         try
         {
             await ValidateBranchAsync(request);
 
-            return await _repository.AddAsync(request);
+            return await repository.AddAsync(request);
         }
         catch (Exception ex) when (ex is not ValidationException)
         {
@@ -44,7 +32,7 @@ public class BranchService : IBranchService
         {
             var branch = await FindBranchOrThrowAsync(id);
 
-            await _repository.DeleteAsync(branch);
+            await repository.DeleteAsync(branch);
         }
         catch (BaseException)
         {
@@ -56,14 +44,15 @@ public class BranchService : IBranchService
         }
     }
 
-    public async Task<PagedResult<Branch>> GetAllAsync(int? id = default,
-                                                       bool? isActive = default,
-                                                       string? name = default,
-                                                       DateTimeOffset? startDate = default,
-                                                       DateTimeOffset? endDate = default,
-                                                       int page = 1,
-                                                       int maxResults = 10,
-                                                       string? orderByClause = default)
+    public async Task<PagedResult<Branch>> GetAllAsync(
+        int? id = default,
+        bool? isActive = default,
+        string? name = default,
+        DateTimeOffset? startDate = default,
+        DateTimeOffset? endDate = default,
+        int page = 1,
+        int maxResults = 10,
+        string? orderByClause = default)
     {
         try
         {
@@ -72,7 +61,7 @@ public class BranchService : IBranchService
 
             var criteria = BuildCriteria(id, isActive, name, startDate, endDate);
 
-            var result = await _repository.GetAsync(page, maxResults, criteria, orderByClause);
+            var result = await repository.GetAsync(page, maxResults, criteria, orderByClause);
 
             return result;
         }
@@ -90,7 +79,7 @@ public class BranchService : IBranchService
     {
         try
         {
-            var branch = await _repository.GetByIdAsync(id);
+            var branch = await repository.GetByIdAsync(id);
 
             return branch;
         }
@@ -108,7 +97,7 @@ public class BranchService : IBranchService
 
             await ValidateBranchAsync(branch);
 
-            return await _repository.UpdateAsync(branch);
+            return await repository.UpdateAsync(branch);
         }
         catch (Exception ex) when (ex is ValidationException || ex is BaseException)
         {
@@ -132,33 +121,26 @@ public class BranchService : IBranchService
         return existingBranch;
     }
 
-    private Expression<Func<Branch, bool>> BuildCriteria(int? id,
-                                                         bool? isActive,
-                                                         string? name,
-                                                         DateTimeOffset? startDate,
-                                                         DateTimeOffset? endDate)
-    {
-        return b =>
+    private static Expression<Func<Branch, bool>> BuildCriteria(
+        int? id,
+        bool? isActive,
+        string? name,
+        DateTimeOffset? startDate,
+        DateTimeOffset? endDate)
+        => b =>
             (!id.HasValue || b.Id == id.Value) &&
             (!isActive.HasValue || b.IsActive == isActive.Value) &&
             (string.IsNullOrEmpty(name) || b.Name!.Contains(name)) &&
             (!startDate.HasValue || b.CreatedAt >= startDate.Value) &&
             (!endDate.HasValue || b.CreatedAt <= endDate.Value);
-    }
 
     private async Task<Branch> FindBranchOrThrowAsync(int id)
-    {
-        var branch = await _repository.GetByIdAsync(id);
-
-        if (branch is null)
-            throw new NotFoundException($"Branch with ID {id} not found.");
-
-        return branch;
-    }
+        => await repository.GetByIdAsync(id)
+            ?? throw new NotFoundException($"Branch with ID {id} not found.");
 
     private async Task ValidateBranchAsync(Branch branch)
     {
-        var validationResult = await _validator.ValidateAsync(branch);
+        var validationResult = await validator.ValidateAsync(branch);
 
         if (!validationResult.IsValid)
             throw new ValidationException(validationResult.Errors);
