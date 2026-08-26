@@ -14,7 +14,7 @@ public class JwtTokenGenerator : IJwtTokenGenerator
     public async Task<string> GenerateTokenAsync(User user)
     {
         var secretKey = Environment.GetEnvironmentVariable("JWT_SECRETKEY")
-                            ?? throw new ArgumentNullException("SecretKey is missing!");
+                            ?? throw new InvalidOperationException("SecretKey is missing!");
 
         if (user is null)
             throw new BadRequestException("User is required.");
