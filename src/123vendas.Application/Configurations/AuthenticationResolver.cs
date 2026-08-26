@@ -10,7 +10,7 @@ public static class AuthenticationResolver
     public static IServiceCollection AddAuthenticationConfiguration(this IServiceCollection services)
     {
         var secretKey = Environment.GetEnvironmentVariable("JWT_SECRETKEY")
-            ?? throw new ArgumentNullException("SecretKey is missing!");
+            ?? throw new InvalidOperationException("SecretKey is missing!");
 
         services.AddAuthentication(options =>
         {

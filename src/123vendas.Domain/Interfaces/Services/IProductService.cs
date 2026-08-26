@@ -10,5 +10,5 @@ public interface IProductService
     Task<Product> CreateAsync(Product request);
     Task<Product> UpdateAsync(int id, Product request);
     Task DeleteAsync(int id);
-    Task<IEnumerable<string>> GetAllCategoriesAsync();
+    IEnumerable<string> GetAllCategories();
 }
