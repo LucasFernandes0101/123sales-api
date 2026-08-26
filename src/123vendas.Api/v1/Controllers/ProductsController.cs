@@ -12,14 +12,8 @@ namespace _123vendas_server.v1.Controllers;
 [ApiController]
 [Route("api/v{version:apiVersion}/[controller]")]
 [ApiVersion("1.0")]
-public class ProductsController : ControllerBase
+public class ProductsController(IProductService productService) : ControllerBase
 {
-    private readonly IProductService _productService;
-
-    public ProductsController(IProductService productService)
-    {
-        _productService = productService;
-    }
 
     /// <summary>
     /// Retrieves a paged list of products based on the provided filters.
@@ -31,7 +25,7 @@ public class ProductsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<ActionResult<PagedResponseDTO<ProductGetResponseDTO>>> GetAsync([FromQuery] ProductGetRequestDTO request)
     {
-        var pagedResult = await _productService.GetAllAsync(
+        var pagedResult = await productService.GetAllAsync(
             request.Id,
             request.IsActive,
             request.Title,
@@ -59,7 +53,7 @@ public class ProductsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public ActionResult<IEnumerable<string>> GetAllCategories()
     {
-        var categories = _productService.GetAllCategories();
+        var categories = productService.GetAllCategories();
 
         if (categories is not null && categories.Any())
             return Ok(categories);
@@ -77,7 +71,7 @@ public class ProductsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<ProductGetDetailResponseDTO>> GetAsync([FromRoute] int id)
     {
-        var product = await _productService.GetByIdAsync(id);
+        var product = await productService.GetByIdAsync(id);
 
         if (product is null)
             return NotFound();
@@ -98,7 +92,7 @@ public class ProductsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<ActionResult<PagedResponseDTO<ProductGetResponseDTO>>> GetByCategoryAsync(string category, [FromQuery] PagedRequestDTO request)
     {
-        var pagedResult = await _productService.GetAllAsync(
+        var pagedResult = await productService.GetAllAsync(
             category: category,
             page: request.Page,
             maxResults: request.Size,
@@ -121,7 +115,7 @@ public class ProductsController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponseDTO), StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<ProductPostResponseDTO>> PostAsync([FromBody] ProductPostRequestDTO request)
     {
-        var createdProduct = await _productService.CreateAsync(request.ToEntity());
+        var createdProduct = await productService.CreateAsync(request.ToEntity());
 
         var response = createdProduct.ToPostResponseDTO();
 
@@ -140,7 +134,7 @@ public class ProductsController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponseDTO), StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<ProductPutResponseDTO>> PutAsync([FromRoute] int id, [FromBody] ProductPutRequestDTO request)
     {
-        var product = await _productService.UpdateAsync(id, request.ToEntity());
+        var product = await productService.UpdateAsync(id, request.ToEntity());
 
         return Ok(product.ToPutResponseDTO());
     }
@@ -155,7 +149,7 @@ public class ProductsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<IActionResult> DeleteAsync(int id)
     {
-        await _productService.DeleteAsync(id);
+        await productService.DeleteAsync(id);
 
         return NoContent();
     }

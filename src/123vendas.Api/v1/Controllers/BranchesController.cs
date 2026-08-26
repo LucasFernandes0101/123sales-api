@@ -12,14 +12,8 @@ namespace _123vendas_server.v1.Controllers;
 [ApiController]
 [Route("api/v{version:apiVersion}/[controller]")]
 [ApiVersion("1.0")]
-public class BranchesController : ControllerBase
+public class BranchesController(IBranchService branchService) : ControllerBase
 {
-    private readonly IBranchService _branchService;
-
-    public BranchesController(IBranchService branchService)
-    {
-        _branchService = branchService;
-    }
 
     /// <summary>
     /// Retrieves a list of branches based on the provided filter criteria and pagination parameters.
@@ -31,7 +25,7 @@ public class BranchesController : ControllerBase
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<ActionResult<PagedResponseDTO<BranchGetResponseDTO>>> GetAsync([FromQuery] BranchGetRequestDTO request)
     {
-        var pagedResult = await _branchService.GetAllAsync(
+        var pagedResult = await branchService.GetAllAsync(
             request.Id,
             request.IsActive,
             request.Name,
@@ -57,7 +51,7 @@ public class BranchesController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<BranchGetDetailResponseDTO>> GetAsync([FromRoute] int id)
     {
-        var branch = await _branchService.GetByIdAsync(id);
+        var branch = await branchService.GetByIdAsync(id);
 
         if (branch is null)
             return NotFound();
@@ -78,7 +72,7 @@ public class BranchesController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponseDTO), StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<BranchPostResponseDTO>> PostAsync([FromBody] BranchPostRequestDTO request)
     {
-        var createdBranch = await _branchService.CreateAsync(request.ToEntity());
+        var createdBranch = await branchService.CreateAsync(request.ToEntity());
 
         var response = createdBranch.ToPostResponseDTO();
 
@@ -98,7 +92,7 @@ public class BranchesController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> PutAsync([FromRoute] int id, [FromBody] BranchPutRequestDTO request)
     {
-        var branch = await _branchService.UpdateAsync(id, request.ToEntity());
+        var branch = await branchService.UpdateAsync(id, request.ToEntity());
 
         return Ok(branch.ToPutResponseDTO());
     }
@@ -114,7 +108,7 @@ public class BranchesController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> DeleteAsync(int id)
     {
-        await _branchService.DeleteAsync(id);
+        await branchService.DeleteAsync(id);
 
         return NoContent();
     }

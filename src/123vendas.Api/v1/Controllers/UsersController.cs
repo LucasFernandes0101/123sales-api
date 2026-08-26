@@ -12,14 +12,8 @@ namespace _123vendas_server.v1.Controllers;
 [ApiController]
 [Route("api/v{version:apiVersion}/[controller]")]
 [ApiVersion("1.0")]
-public class UsersController : ControllerBase
+public class UsersController(IMediator mediator) : ControllerBase
 {
-    private readonly IMediator _mediator;
-
-    public UsersController(IMediator mediator)
-    {
-        _mediator = mediator;
-    }
 
     /// <summary>
     /// Creates a new user.
@@ -34,7 +28,7 @@ public class UsersController : ControllerBase
     {
         var command = dto.ToCommand();
 
-        var result = await _mediator.Send(command);
+        var result = await mediator.Send(command);
 
         var response = result?.ToPostResponse();
 
@@ -53,7 +47,7 @@ public class UsersController : ControllerBase
     {
         var command = new GetUserCommand(id);
 
-        var result = await _mediator.Send(command);
+        var result = await mediator.Send(command);
 
         if (result is null)
             return NotFound();
@@ -77,7 +71,7 @@ public class UsersController : ControllerBase
     {
         var command = new DeleteUserCommand(id);
 
-        await _mediator.Send(command);
+        await mediator.Send(command);
 
         return NoContent();
     }

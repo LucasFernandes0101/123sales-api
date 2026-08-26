@@ -10,13 +10,8 @@ namespace _123vendas_server.v1.Controllers;
 [ApiController]
 [Route("api/v{version:apiVersion}/[controller]")]
 [ApiVersion("1.0")]
-public class AuthController : ControllerBase
+public class AuthController(IMediator mediator) : ControllerBase
 {
-    private readonly IMediator _mediator;
-    public AuthController(IMediator mediator)
-    {
-        _mediator = mediator;
-    }
 
     /// <summary>
     /// Authenticates a user with their credentials.
@@ -31,7 +26,7 @@ public class AuthController : ControllerBase
     {
         var command = request.ToCommand();
 
-        var result = await _mediator.Send(command);
+        var result = await mediator.Send(command);
 
         var response = result.ToResponseDTO();
 

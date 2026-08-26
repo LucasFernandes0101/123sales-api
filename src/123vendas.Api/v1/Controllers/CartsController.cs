@@ -11,14 +11,8 @@ namespace _123vendas_server.v1.Controllers;
 [ApiController]
 [Route("api/v{version:apiVersion}/[controller]")]
 [ApiVersion("1.0")]
-public class CartsController : ControllerBase
+public class CartsController(ICartService cartService) : ControllerBase
 {
-    private readonly ICartService _cartService;
-
-    public CartsController(ICartService cartService)
-    {
-        _cartService = cartService;
-    }
 
     /// <summary>
     /// Retrieves a paginated list of carts based on the provided filters.
@@ -31,7 +25,7 @@ public class CartsController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponseDTO), StatusCodes.Status404NotFound)]
     public async Task<ActionResult<PagedResponseDTO<CartGetResponseDTO>>> GetAsync([FromQuery] CartGetRequestDTO request)
     {
-        var pagedResult = await _cartService.GetAllAsync(
+        var pagedResult = await cartService.GetAllAsync(
             request.Id,
             request.UserId,
             request.MinDate,
@@ -56,7 +50,7 @@ public class CartsController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponseDTO), StatusCodes.Status404NotFound)]
     public async Task<ActionResult<CartGetDetailResponseDTO>> GetAsync([FromRoute] int id)
     {
-        var cart = await _cartService.GetByIdAsync(id);
+        var cart = await cartService.GetByIdAsync(id);
 
         if (cart is null)
             return NotFound();
@@ -76,7 +70,7 @@ public class CartsController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponseDTO), StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<CartPostResponseDTO>> PostAsync([FromBody] CartPostRequestDTO request)
     {
-        var createdCart = await _cartService.CreateAsync(request.ToEntity());
+        var createdCart = await cartService.CreateAsync(request.ToEntity());
 
         var response = createdCart.ToPostResponseDTO();
 
@@ -95,7 +89,7 @@ public class CartsController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponseDTO), StatusCodes.Status404NotFound)]
     public async Task<ActionResult<CartPutResponseDTO>> PutAsync([FromRoute] int id, [FromBody] CartPutRequestDTO request)
     {
-        var cart = await _cartService.UpdateAsync(id, request.ToEntity());
+        var cart = await cartService.UpdateAsync(id, request.ToEntity());
 
         return Ok(cart.ToPutResponseDTO());
     }
@@ -110,7 +104,7 @@ public class CartsController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponseDTO), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> DeleteAsync(int id)
     {
-        await _cartService.DeleteAsync(id);
+        await cartService.DeleteAsync(id);
 
         return NoContent();
     }
