@@ -13,32 +13,20 @@ public static class ProductMappers
         cfg.AddProfile<ProductMapperProfile>(), NullLoggerFactory.Instance).CreateMapper();
 
     public static List<ProductGetResponseDTO> ToDTO(this List<Product> entities)
-    {
-        return _mapper.Map<List<ProductGetResponseDTO>>(entities);
-    }
+        => _mapper.Map<List<ProductGetResponseDTO>>(entities);
 
     public static ProductGetDetailResponseDTO ToDetailDTO(this Product entity)
-    {
-        return _mapper.Map<ProductGetDetailResponseDTO>(entity);
-    }
+        => _mapper.Map<ProductGetDetailResponseDTO>(entity);
 
     public static ProductPostResponseDTO ToPostResponseDTO(this Product entity)
-    {
-        return entity is not null ? _mapper.Map<ProductPostResponseDTO>(entity) : new ProductPostResponseDTO();
-    }
+        => entity is not null ? _mapper.Map<ProductPostResponseDTO>(entity) : new ProductPostResponseDTO();
 
     public static ProductPutResponseDTO ToPutResponseDTO(this Product entity)
-    {
-        return entity is not null ? _mapper.Map<ProductPutResponseDTO>(entity) : new ProductPutResponseDTO();
-    }
+        => entity is not null ? _mapper.Map<ProductPutResponseDTO>(entity) : new ProductPutResponseDTO();
 
     public static Product ToEntity(this ProductPostRequestDTO dto)
-    {
-        return dto is not null ? _mapper.Map<Product>(dto) : new Product();
-    }
+        => dto is not null ? _mapper.Map<Product>(dto) : new Product();
 
     public static Product ToEntity(this ProductPutRequestDTO dto)
-    {
-        return dto is not null ? _mapper.Map<Product>(dto) : new Product();
-    }
+        => dto is not null ? _mapper.Map<Product>(dto) : new Product();
 }

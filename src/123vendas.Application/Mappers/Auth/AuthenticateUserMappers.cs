@@ -13,17 +13,11 @@ public static class AuthenticateUserMappers
         cfg.AddProfile<AuthenticateUserProfile>(), NullLoggerFactory.Instance).CreateMapper();
 
     public static AuthenticateUserCommand ToCommand(this AuthenticateUserRequestDTO dto)
-    {
-        return _mapper.Map<AuthenticateUserCommand>(dto);
-    }
+        => _mapper.Map<AuthenticateUserCommand>(dto);
 
     public static AuthenticateUserResult ToResult(this User dto)
-    {
-        return _mapper.Map<AuthenticateUserResult>(dto);
-    }
+        => _mapper.Map<AuthenticateUserResult>(dto);
 
     public static AuthenticateUserResponseDTO ToResponseDTO(this AuthenticateUserResult result)
-    {
-        return _mapper.Map<AuthenticateUserResponseDTO>(result);
-    }
+        => _mapper.Map<AuthenticateUserResponseDTO>(result);
 }

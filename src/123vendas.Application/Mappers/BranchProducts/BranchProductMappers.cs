@@ -13,32 +13,20 @@ public static class BranchProductMappers
         cfg.AddProfile<BranchProductMapperProfile>(), NullLoggerFactory.Instance).CreateMapper();
 
     public static List<BranchProductGetResponseDTO> ToDTO(this List<BranchProduct> entities)
-    {
-        return _mapper.Map<List<BranchProductGetResponseDTO>>(entities);
-    }
+        => _mapper.Map<List<BranchProductGetResponseDTO>>(entities);
 
     public static BranchProductGetDetailResponseDTO ToDetailDTO(this BranchProduct entity)
-    {
-        return _mapper.Map<BranchProductGetDetailResponseDTO>(entity);
-    }
+        => _mapper.Map<BranchProductGetDetailResponseDTO>(entity);
 
     public static BranchProductPostResponseDTO ToPostResponseDTO(this BranchProduct entity)
-    {
-        return entity is not null ? _mapper.Map<BranchProductPostResponseDTO>(entity) : new BranchProductPostResponseDTO();
-    }
+        => entity is not null ? _mapper.Map<BranchProductPostResponseDTO>(entity) : new BranchProductPostResponseDTO();
 
     public static BranchProductPutResponseDTO ToPutResponseDTO(this BranchProduct entity)
-    {
-        return entity is not null ? _mapper.Map<BranchProductPutResponseDTO>(entity) : new BranchProductPutResponseDTO();
-    }
+        => entity is not null ? _mapper.Map<BranchProductPutResponseDTO>(entity) : new BranchProductPutResponseDTO();
 
     public static BranchProduct ToEntity(this BranchProductPostRequestDTO dto)
-    {
-        return dto is not null ? _mapper.Map<BranchProduct>(dto) : new BranchProduct();
-    }
+        => dto is not null ? _mapper.Map<BranchProduct>(dto) : new BranchProduct();
 
     public static BranchProduct ToEntity(this BranchProductPutRequestDTO dto)
-    {
-        return dto is not null ? _mapper.Map<BranchProduct>(dto) : new BranchProduct();
-    }
+        => dto is not null ? _mapper.Map<BranchProduct>(dto) : new BranchProduct();
 }

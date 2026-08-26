@@ -13,32 +13,20 @@ public static class CartMappers
         cfg.AddProfile<CartMapperProfile>(), NullLoggerFactory.Instance).CreateMapper();
 
     public static List<CartGetResponseDTO> ToDTO(this List<Cart> entities)
-    {
-        return _mapper.Map<List<CartGetResponseDTO>>(entities);
-    }
+        => _mapper.Map<List<CartGetResponseDTO>>(entities);
 
     public static CartGetDetailResponseDTO ToDetailDTO(this Cart entity)
-    {
-        return _mapper.Map<CartGetDetailResponseDTO>(entity);
-    }
+        => _mapper.Map<CartGetDetailResponseDTO>(entity);
 
     public static CartPostResponseDTO ToPostResponseDTO(this Cart entity)
-    {
-        return entity is not null ? _mapper.Map<CartPostResponseDTO>(entity) : new CartPostResponseDTO();
-    }
+        => entity is not null ? _mapper.Map<CartPostResponseDTO>(entity) : new CartPostResponseDTO();
 
     public static CartPutResponseDTO ToPutResponseDTO(this Cart entity)
-    {
-        return entity is not null ? _mapper.Map<CartPutResponseDTO>(entity) : new CartPutResponseDTO();
-    }
+        => entity is not null ? _mapper.Map<CartPutResponseDTO>(entity) : new CartPutResponseDTO();
 
     public static Cart ToEntity(this CartPostRequestDTO dto)
-    {
-        return dto is not null ? _mapper.Map<Cart>(dto) : new Cart();
-    }
+        => dto is not null ? _mapper.Map<Cart>(dto) : new Cart();
 
     public static Cart ToEntity(this CartPutRequestDTO dto)
-    {
-        return dto is not null ? _mapper.Map<Cart>(dto) : new Cart();
-    }
+        => dto is not null ? _mapper.Map<Cart>(dto) : new Cart();
 }
