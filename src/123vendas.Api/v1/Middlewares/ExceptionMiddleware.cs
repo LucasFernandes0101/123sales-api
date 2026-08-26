@@ -43,7 +43,7 @@ public class ExceptionMiddleware(
     }
 
     private static ErrorResponseDTO CreateValidationErrorResponseDTO(ValidationException validationEx)
-    => new ErrorResponseDTO
+    => new()
     {
         Type = nameof(validationEx),
         Error = "Invalid input data",
@@ -51,7 +51,7 @@ public class ExceptionMiddleware(
     };
 
     private static ErrorResponseDTO CreateBaseErrorResponseDTO(BaseException baseEx)
-    => new ErrorResponseDTO
+    => new()
     {
         Type = nameof(baseEx),
         Error = baseEx.Message,
@@ -59,7 +59,7 @@ public class ExceptionMiddleware(
     };
 
     private static ErrorResponseDTO CreateGenericErrorResponseDTO(Exception ex)
-    => new ErrorResponseDTO
+    => new()
     {
         Type = nameof(ex),
         Error = "An unexpected error occurred. Please try again later.",
