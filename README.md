@@ -18,7 +18,7 @@ This project demonstrates the use of modern technologies and patterns, highlight
 
 ## Technologies and Patterns Used
 
-* **.NET 8**: Foundation for building scalable and robust applications.
+* **.NET 10**: Foundation for building scalable and robust applications.
 * **MediatR**: Used to promote decoupled communication. The pattern was applied specifically to the users and authentication area.
 * **Fluent Validations**: Data validation in a fluent and intuitive way.
 * **BCrypt**: Secure password hashing.
@@ -27,7 +27,7 @@ This project demonstrates the use of modern technologies and patterns, highlight
 * **JWT**: Role-based authentication and authorization.
 * **Serilog**: Structured logging for monitoring and diagnostics.
 * **Automapper**: Automatic mapping between entities and DTOs.
-* **Microsoft.AspNetCore.Mvc.Versioning**: API version management.
+* **Asp.Versioning.Mvc**: API version management.
 * **Swagger**: Interactive and accessible documentation.
 * **Entity Framework Core**: Object-relational mapping with configurations via `IEntityTypeConfiguration`.
 * **IQueryable**: Dynamic and optimized queries.
@@ -146,7 +146,21 @@ This architecture ensures that each service consumes only relevant events, optim
 
 ## Running the Project
 
-To run the project, you need to configure the following environment variables, which define behavior and connections to the external services used by the application. **Note:** For local execution, these variables are configured in the `launchSettings.json` file.
+### Option 1: Docker Compose (Recommended)
+
+The project includes a `docker-compose.yml` that spins up PostgreSQL, RabbitMQ, and the API with all environment variables pre-configured:
+
+```bash
+docker compose up --build
+```
+
+The API will be available at `http://localhost:8080`, and Swagger UI at `http://localhost:8080/swagger`.
+
+RabbitMQ Management UI is available at `http://localhost:15672` (guest/guest).
+
+### Option 2: Local Execution
+
+To run the project locally, you need to configure the following environment variables, which define behavior and connections to the external services used by the application. **Note:** For local execution, these variables are configured in the `launchSettings.json` file.
 
 ```json
 "environmentVariables": {
@@ -178,7 +192,7 @@ To run the project, you need to configure the following environment variables, w
 > * **PostgreDbContext**: The constructor of `PostgreDbContext` contains the call `base.Database.EnsureCreated();`, ensuring the database will be created automatically if it does not exist.
 > * **JWT Secret Key**: The JWT secret key can be changed as needed in the `launchSettings.json` file.
 
-### Steps to Start the Project
+### Steps to Start the Project (Local)
 
 1. Clone the repository:
 
@@ -193,8 +207,22 @@ To run the project, you need to configure the following environment variables, w
 3. Run the project:
 
    ```bash
-   dotnet run
+   dotnet run --project src/123vendas.Api
    ```
+
+### Running Tests
+
+To run the unit tests:
+
+```bash
+dotnet test
+```
+
+To run tests with coverage (if configured):
+
+```bash
+dotnet test --collect:"XPlat Code Coverage"
+```
 
 ## Improvement Points
 
