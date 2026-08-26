@@ -31,17 +31,18 @@ public class ProductsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<ActionResult<PagedResponseDTO<ProductGetResponseDTO>>> GetAsync([FromQuery] ProductGetRequestDTO request)
     {
-        var pagedResult = await _productService.GetAllAsync(request.Id,
-                                                            request.IsActive,
-                                                            request.Title,
-                                                            request.Category,
-                                                            request.MinPrice,
-                                                            request.MaxPrice,
-                                                            request.StartDate,
-                                                            request.EndDate,
-                                                            request.Page,
-                                                            request.Size,
-                                                            request.OrderByClause);
+        var pagedResult = await _productService.GetAllAsync(
+            request.Id,
+            request.IsActive,
+            request.Title,
+            request.Category,
+            request.MinPrice,
+            request.MaxPrice,
+            request.StartDate,
+            request.EndDate,
+            request.Page,
+            request.Size,
+            request.OrderByClause);
 
         if (pagedResult?.Items is not null && pagedResult.Items.Any())
             return Ok(new PagedResponseDTO<ProductGetResponseDTO>(pagedResult.Items.ToDTO(), pagedResult.Total, request.Page, request.Size));
@@ -56,9 +57,9 @@ public class ProductsController : ControllerBase
     [HttpGet("categories")]
     [ProducesResponseType(typeof(IEnumerable<string>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-    public async Task<ActionResult<IEnumerable<string>>> GetAllCategoriesAsync()
+    public ActionResult<IEnumerable<string>> GetAllCategories()
     {
-        var categories = await _productService.GetAllCategoriesAsync();
+        var categories = _productService.GetAllCategories();
 
         if (categories is not null && categories.Any())
             return Ok(categories);
@@ -97,10 +98,11 @@ public class ProductsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<ActionResult<PagedResponseDTO<ProductGetResponseDTO>>> GetByCategoryAsync(string category, [FromQuery] PagedRequestDTO request)
     {
-        var pagedResult = await _productService.GetAllAsync(category: category,
-                                                            page: request.Page,
-                                                            maxResults: request.Size,
-                                                            orderByClause: request.OrderByClause);
+        var pagedResult = await _productService.GetAllAsync(
+            category: category,
+            page: request.Page,
+            maxResults: request.Size,
+            orderByClause: request.OrderByClause);
 
         if (pagedResult?.Items is not null && pagedResult.Items.Any())
             return Ok(new PagedResponseDTO<ProductGetResponseDTO>(pagedResult.Items.ToDTO(), pagedResult.Total, request.Page, request.Size));

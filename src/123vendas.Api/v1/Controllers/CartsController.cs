@@ -31,13 +31,14 @@ public class CartsController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponseDTO), StatusCodes.Status404NotFound)]
     public async Task<ActionResult<PagedResponseDTO<CartGetResponseDTO>>> GetAsync([FromQuery] CartGetRequestDTO request)
     {
-        var pagedResult = await _cartService.GetAllAsync(request.Id,
-                                                         request.UserId,
-                                                         request.MinDate,
-                                                         request.MaxDate,
-                                                         request.Page,
-                                                         request.Size,
-                                                         request.OrderByClause);
+        var pagedResult = await _cartService.GetAllAsync(
+            request.Id,
+            request.UserId,
+            request.MinDate,
+            request.MaxDate,
+            request.Page,
+            request.Size,
+            request.OrderByClause);
 
         if (pagedResult?.Items is not null && pagedResult.Items.Any())
             return Ok(new PagedResponseDTO<CartGetResponseDTO>(pagedResult.Items.ToDTO(), pagedResult.Total, request.Page, request.Size));

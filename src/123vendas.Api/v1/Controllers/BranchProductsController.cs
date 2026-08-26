@@ -31,15 +31,16 @@ public class BranchProductsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<ActionResult<PagedResponseDTO<BranchProductGetResponseDTO>>> GetAsync([FromQuery] BranchProductGetRequestDTO request)
     {
-        var pagedResult = await _branchProductService.GetAllAsync(request.Id,
-                                                                  request.BranchId,
-                                                                  request.ProductId,
-                                                                  request.IsActive,
-                                                                  request.StartDate,
-                                                                  request.EndDate,
-                                                                  request.Page,
-                                                                  request.Size,
-                                                                  request.OrderByClause);
+        var pagedResult = await _branchProductService.GetAllAsync(
+            request.Id,
+            request.BranchId,
+            request.ProductId,
+            request.IsActive,
+            request.StartDate,
+            request.EndDate,
+            request.Page,
+            request.Size,
+            request.OrderByClause);
 
         if (pagedResult?.Items is not null && pagedResult.Items.Any())
             return Ok(new PagedResponseDTO<BranchProductGetResponseDTO>(pagedResult.Items.ToDTO(), pagedResult.Total, request.Page, request.Size));
