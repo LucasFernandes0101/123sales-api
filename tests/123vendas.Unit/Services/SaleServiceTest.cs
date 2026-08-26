@@ -23,19 +23,19 @@ public class SaleServiceTest
     [Trait("Sale", "Service")]
     public async Task CreateAsync_ShouldCreateSale_WhenValidRequest()
     {
-        var (repository, saleItemRepository, branchProductRepository, validator, rabbitMQIntegration, logger) = CreateDependencies();
+        var (repository, branchProductRepository, validator, rabbitMQIntegration, logger) = CreateDependencies();
 
         var saleMock = new SaleMock().Generate();
         saleMock.Status = SaleStatus.Created;
-        saleMock.Items = new List<SaleItem> { new SaleItem { ProductId = 1, Quantity = 1 } };
+        saleMock.Items = [new SaleItem { ProductId = 1, Quantity = 1 }];
 
         var branchProduct = new BranchProduct { ProductId = saleMock.Items[0].ProductId, Price = 100, StockQuantity = 10, BranchId = saleMock.BranchId };
 
         repository.AddAsync(Arg.Any<Sale>()).Returns(saleMock);
-        branchProductRepository.GetAsync(1, 1, Arg.Any<Expression<Func<BranchProduct, bool>>>()).Returns(new PagedResult<BranchProduct>(1, new List<BranchProduct> { branchProduct }));
+        branchProductRepository.GetAsync(1, 1, Arg.Any<Expression<Func<BranchProduct, bool>>>()).Returns(new PagedResult<BranchProduct>(1, [branchProduct]));
         validator.ValidateAsync(Arg.Any<Sale>()).Returns(new ValidationResult());
 
-        var saleService = new SaleService(repository, saleItemRepository, branchProductRepository, validator, rabbitMQIntegration, logger);
+        var saleService = new SaleService(repository, branchProductRepository, validator, rabbitMQIntegration, logger);
 
         // Act
         var result = await saleService.CreateAsync(saleMock);
@@ -57,18 +57,18 @@ public class SaleServiceTest
     public async Task CreateAsync_ShouldThrowValidationException_WhenValidationFails()
     {
         // Arrange
-        var (repository, saleItemRepository, branchProductRepository, validator, rabbitMQIntegration, logger) = CreateDependencies();
+        var (repository, branchProductRepository, validator, rabbitMQIntegration, logger) = CreateDependencies();
         var saleMock = new SaleMock().Generate();
         var branchProducts = new BranchProductMock().Generate(1);
 
         branchProductRepository.GetAsync(1, 1, Arg.Any<Expression<Func<BranchProduct, bool>>>()).Returns(Task.FromResult(new PagedResult<BranchProduct>(1, branchProducts)));
         validator.ValidateAsync(Arg.Any<Sale>()).Returns(new ValidationResult(new List<ValidationFailure> {
-            new ValidationFailure("UserId", "User is required") }));
+            new("UserId", "User is required") }));
 
-        var saleService = new SaleService(repository, saleItemRepository, branchProductRepository, validator, rabbitMQIntegration, logger);
+        var saleService = new SaleService(repository, branchProductRepository, validator, rabbitMQIntegration, logger);
 
         // Act
-        Func<Task> act = async () => await saleService.CreateAsync(saleMock);
+        var act = async () => await saleService.CreateAsync(saleMock);
 
         // Assert
         await act.Should().ThrowAsync<ValidationException>();
@@ -79,16 +79,16 @@ public class SaleServiceTest
     public async Task CreateAsync_ShouldThrowItemOutOfStockException_WhenProductIsOutOfStock()
     {
         // Arrange
-        var (repository, saleItemRepository, branchProductRepository, validator, rabbitMQIntegration, logger) = CreateDependencies();
-        var saleService = new SaleService(repository, saleItemRepository, branchProductRepository, validator, rabbitMQIntegration, logger);
+        var (repository, branchProductRepository, validator, rabbitMQIntegration, logger) = CreateDependencies();
+        var saleService = new SaleService(repository, branchProductRepository, validator, rabbitMQIntegration, logger);
         var saleMock = new SaleMock().Generate();
         var branchProduct = new BranchProduct { ProductId = saleMock.Items!.First().ProductId, Price = 100, StockQuantity = 0 };
 
-        branchProductRepository.GetAsync(1, 1, Arg.Any<Expression<Func<BranchProduct, bool>>>()).Returns(new PagedResult<BranchProduct>(1, new List<BranchProduct> { branchProduct }));
+        branchProductRepository.GetAsync(1, 1, Arg.Any<Expression<Func<BranchProduct, bool>>>()).Returns(new PagedResult<BranchProduct>(1, [branchProduct]));
         validator.ValidateAsync(saleMock).Returns(new ValidationResult());
 
         // Act
-        Func<Task> act = async () => await saleService.CreateAsync(saleMock);
+        var act = async () => await saleService.CreateAsync(saleMock);
 
         // Assert
         await act.Should().ThrowAsync<ItemOutOfStockException>();
@@ -99,15 +99,15 @@ public class SaleServiceTest
     public async Task CreateAsync_ShouldThrowNotFoundException_WhenBranchProductNotFound()
     {
         // Arrange
-        var (repository, saleItemRepository, branchProductRepository, validator, rabbitMQIntegration, logger) = CreateDependencies();
-        var saleService = new SaleService(repository, saleItemRepository, branchProductRepository, validator, rabbitMQIntegration, logger);
+        var (repository, branchProductRepository, validator, rabbitMQIntegration, logger) = CreateDependencies();
+        var saleService = new SaleService(repository, branchProductRepository, validator, rabbitMQIntegration, logger);
         var saleMock = new SaleMock().Generate();
 
-        branchProductRepository.GetAsync(1, 1, Arg.Any<Expression<Func<BranchProduct, bool>>>()).Returns(new PagedResult<BranchProduct>(0, new List<BranchProduct>()));
+        branchProductRepository.GetAsync(1, 1, Arg.Any<Expression<Func<BranchProduct, bool>>>()).Returns(new PagedResult<BranchProduct>(0, []));
         validator.ValidateAsync(saleMock).Returns(new ValidationResult());
 
         // Act
-        Func<Task> act = async () => await saleService.CreateAsync(saleMock);
+        var act = async () => await saleService.CreateAsync(saleMock);
 
         // Assert
         await act.Should().ThrowAsync<NotFoundException>();
@@ -120,11 +120,11 @@ public class SaleServiceTest
     public async Task CreateSaleAsync_ShouldApplyDiscount_WhenValidDiscountProvided(int quantity)
     {
         // Arrange
-        var (repository, saleItemRepository, branchProductRepository, validator, rabbitMQIntegration, logger) = CreateDependencies();
+        var (repository, branchProductRepository, validator, rabbitMQIntegration, logger) = CreateDependencies();
 
         var sale = new SaleMock().Generate();
-        sale.Items = new List<SaleItem>()
-        {
+        sale.Items =
+        [
             new SaleItem
             {
                 ProductId = 1,
@@ -132,7 +132,7 @@ public class SaleServiceTest
                 Discount = 25,
                 Sequence = 2
             }
-        };
+        ];
 
         var branchProduct = new BranchProduct
         {
@@ -145,12 +145,12 @@ public class SaleServiceTest
         validator.ValidateAsync(Arg.Any<Sale>()).Returns(new ValidationResult());
 
         branchProductRepository.GetAsync(1, 1, Arg.Any<Expression<Func<BranchProduct, bool>>>())
-            .Returns(Task.FromResult(new PagedResult<BranchProduct>(1, new List<BranchProduct>() { branchProduct })));
+            .Returns(Task.FromResult(new PagedResult<BranchProduct>(1, [branchProduct])));
 
         var capturedSale = new Sale();
         repository.AddAsync(Arg.Do<Sale>(s => capturedSale = s)).Returns(sale);
 
-        var saleService = new SaleService(repository, saleItemRepository, branchProductRepository, validator, rabbitMQIntegration, logger);
+        var saleService = new SaleService(repository, branchProductRepository, validator, rabbitMQIntegration, logger);
 
         // Act
         await saleService.CreateAsync(sale);
@@ -186,18 +186,18 @@ public class SaleServiceTest
     public async Task CreateSaleAsync_ShouldApplyCorrectDiscount_BasedItemQuantity(int quantity)
     {
         // Arrange
-        var (repository, saleItemRepository, branchProductRepository, validator, rabbitMQIntegration, logger) = CreateDependencies();
+        var (repository, branchProductRepository, validator, rabbitMQIntegration, logger) = CreateDependencies();
 
         var sale = new SaleMock().Generate();
-        sale.Items = new List<SaleItem>()
-        {
+        sale.Items =
+        [
             new SaleItem
             {
                 ProductId = 1,
                 Quantity = quantity,
                 Sequence = 2
             }
-        };
+        ];
 
         var branchProduct = new BranchProduct
         {
@@ -210,12 +210,12 @@ public class SaleServiceTest
         validator.ValidateAsync(Arg.Any<Sale>()).Returns(new ValidationResult());
 
         branchProductRepository.GetAsync(1, 1, Arg.Any<Expression<Func<BranchProduct, bool>>>())
-            .Returns(Task.FromResult(new PagedResult<BranchProduct>(1, new List<BranchProduct>() { branchProduct })));
+            .Returns(Task.FromResult(new PagedResult<BranchProduct>(1, [branchProduct])));
 
         var capturedSale = new Sale();
         repository.AddAsync(Arg.Do<Sale>(s => capturedSale = s)).Returns(sale);
 
-        var saleService = new SaleService(repository, saleItemRepository, branchProductRepository, validator, rabbitMQIntegration, logger);
+        var saleService = new SaleService(repository, branchProductRepository, validator, rabbitMQIntegration, logger);
 
         // Act
         await saleService.CreateAsync(sale);
@@ -224,8 +224,8 @@ public class SaleServiceTest
         capturedSale.Should().NotBeNull();
         capturedSale.Items.Should().NotBeEmpty();
 
-        decimal expectedDiscount = 0;
-        decimal expectedPrice = branchProduct.Price * quantity;
+        var expectedDiscount = 0m;
+        var expectedPrice = branchProduct.Price * quantity;
 
         if (quantity >= 10)
         {
@@ -250,11 +250,11 @@ public class SaleServiceTest
     public async Task CreateSaleAsync_ShouldThrow_WhenItemQuantityMoreThan20()
     {
         // Arrange
-        var (repository, saleItemRepository, branchProductRepository, validator, rabbitMQIntegration, logger) = CreateDependencies();
+        var (repository, branchProductRepository, validator, rabbitMQIntegration, logger) = CreateDependencies();
 
         var sale = new SaleMock().Generate();
-        sale.Items = new List<SaleItem>()
-        {
+        sale.Items =
+        [
             new SaleItem
             {
                 ProductId = 1,
@@ -262,7 +262,7 @@ public class SaleServiceTest
                 Discount = 25,
                 Sequence = 2
             }
-        };
+        ];
 
         var branchProduct = new BranchProduct
         {
@@ -275,15 +275,15 @@ public class SaleServiceTest
         validator.ValidateAsync(Arg.Any<Sale>()).Returns(new ValidationResult());
 
         branchProductRepository.GetAsync(1, 1, Arg.Any<Expression<Func<BranchProduct, bool>>>())
-            .Returns(Task.FromResult(new PagedResult<BranchProduct>(1, new List<BranchProduct>() { branchProduct })));
+            .Returns(Task.FromResult(new PagedResult<BranchProduct>(1, [branchProduct])));
 
         var capturedSale = new Sale();
         repository.AddAsync(Arg.Do<Sale>(s => capturedSale = s)).Returns(sale);
 
-        var saleService = new SaleService(repository, saleItemRepository, branchProductRepository, validator, rabbitMQIntegration, logger);
+        var saleService = new SaleService(repository, branchProductRepository, validator, rabbitMQIntegration, logger);
 
         // Act
-        Func<Task> act = async () => await saleService.CreateAsync(sale);
+        var act = async () => await saleService.CreateAsync(sale);
 
         // Assert
         await act.Should().ThrowAsync<ItemQuantityLimitExceededException>()
@@ -295,7 +295,7 @@ public class SaleServiceTest
     public async Task CancelItemAsync_ShouldCancelSaleItem_WhenValidRequest()
     {
         // Arrange
-        var (repository, saleItemRepository, branchProductRepository, validator, rabbitMQIntegration, logger) = CreateDependencies();
+        var (repository, branchProductRepository, validator, rabbitMQIntegration, logger) = CreateDependencies();
 
         var sale = new SaleMock().Generate();
         sale.TotalAmount = sale.Items!.Sum(i => i.Price);
@@ -303,7 +303,7 @@ public class SaleServiceTest
         var oldSaleAmount = sale.TotalAmount;
 
         repository.GetWithItemsByIdAsync(sale.Id).Returns(sale);
-        var saleService = new SaleService(repository, saleItemRepository, branchProductRepository, validator, rabbitMQIntegration, logger);
+        var saleService = new SaleService(repository, branchProductRepository, validator, rabbitMQIntegration, logger);
 
         // Act
         var result = await saleService.CancelItemAsync(sale.Id, sale.Items!.First().Sequence);
@@ -323,16 +323,16 @@ public class SaleServiceTest
     public async Task CancelItemAsync_ShouldThrowException_WhenSaleAlreadyCanceled()
     {
         // Arrange
-        var (repository, saleItemRepository, branchProductRepository, validator, rabbitMQIntegration, logger) = CreateDependencies();
+        var (repository, branchProductRepository, validator, rabbitMQIntegration, logger) = CreateDependencies();
 
         var sale = new SaleMock().Generate();
         sale.Status = SaleStatus.Canceled;
 
         repository.GetWithItemsByIdAsync(sale.Id).Returns(sale);
-        var saleService = new SaleService(repository, saleItemRepository, branchProductRepository, validator, rabbitMQIntegration, logger);
+        var saleService = new SaleService(repository, branchProductRepository, validator, rabbitMQIntegration, logger);
 
         // Act
-        Func<Task> act = () => saleService.CancelItemAsync(sale.Id, sale.Items!.First().Sequence);
+        var act = () => saleService.CancelItemAsync(sale.Id, sale.Items!.First().Sequence);
 
         // Assert
         await act.Should().ThrowAsync<SaleAlreadyCanceledException>()
@@ -344,17 +344,17 @@ public class SaleServiceTest
     public async Task CancelItemAsync_ShouldThrowException_WhenItemAlreadyCanceled()
     {
         // Arrange
-        var (repository, saleItemRepository, branchProductRepository, validator, rabbitMQIntegration, logger) = CreateDependencies();
+        var (repository, branchProductRepository, validator, rabbitMQIntegration, logger) = CreateDependencies();
 
         var sale = new SaleMock().Generate();
         sale.Status = SaleStatus.Created;
         sale.Items![0].IsCancelled = true;
 
         repository.GetWithItemsByIdAsync(sale.Id).Returns(sale);
-        var saleService = new SaleService(repository, saleItemRepository, branchProductRepository, validator, rabbitMQIntegration, logger);
+        var saleService = new SaleService(repository, branchProductRepository, validator, rabbitMQIntegration, logger);
 
         // Act
-        Func<Task> act = () => saleService.CancelItemAsync(sale.Id, sale.Items[0].Sequence);
+        var act = () => saleService.CancelItemAsync(sale.Id, sale.Items[0].Sequence);
 
         // Assert
         await act.Should().ThrowAsync<SaleItemAlreadyCanceledException>()
@@ -366,9 +366,9 @@ public class SaleServiceTest
     public async Task CancelAsync_ShouldCancelSale_WhenValidRequest()
     {
         // Arrange
-        var (repository, saleItemRepository, branchProductRepository, validator, rabbitMQIntegration, logger) = CreateDependencies();
+        var (repository, branchProductRepository, validator, rabbitMQIntegration, logger) = CreateDependencies();
 
-        var saleService = new SaleService(repository, saleItemRepository, branchProductRepository, validator, rabbitMQIntegration, logger);
+        var saleService = new SaleService(repository, branchProductRepository, validator, rabbitMQIntegration, logger);
         var saleMock = new SaleMock().Generate();
         saleMock.Status = SaleStatus.Created;
         repository.GetByIdAsync(saleMock.Id).Returns(saleMock);
@@ -388,9 +388,9 @@ public class SaleServiceTest
     public async Task GetAllAsync_ShouldReturnSales_WhenValidParameters()
     {
         // Arrange
-        var (repository, saleItemRepository, branchProductRepository, validator, rabbitMQIntegration, logger) = CreateDependencies();
+        var (repository, branchProductRepository, validator, rabbitMQIntegration, logger) = CreateDependencies();
 
-        var saleService = new SaleService(repository, saleItemRepository, branchProductRepository, validator, rabbitMQIntegration, logger);
+        var saleService = new SaleService(repository, branchProductRepository, validator, rabbitMQIntegration, logger);
         var sales = new SaleMock().Generate(1);
         repository.GetAsync(1, 10, Arg.Any<Expression<Func<Sale, bool>>>()).Returns(new PagedResult<Sale>(1, sales));
 
@@ -408,7 +408,7 @@ public class SaleServiceTest
     public async Task UpdateAsync_ShouldUpdateSale_WhenValidRequest()
     {
         // Arrange
-        var (repository, saleItemRepository, branchProductRepository, validator, rabbitMQIntegration, logger) = CreateDependencies();
+        var (repository, branchProductRepository, validator, rabbitMQIntegration, logger) = CreateDependencies();
 
         var saleMock = new SaleMock().Generate();
         saleMock.Status = SaleStatus.Created;
@@ -416,7 +416,7 @@ public class SaleServiceTest
         repository.UpdateAsync(Arg.Any<Sale>()).Returns(saleMock);
         validator.ValidateAsync(Arg.Is<Sale>(s => s.Id == saleMock.Id)).Returns(new ValidationResult());
 
-        var saleService = new SaleService(repository, saleItemRepository, branchProductRepository, validator, rabbitMQIntegration, logger);
+        var saleService = new SaleService(repository, branchProductRepository, validator, rabbitMQIntegration, logger);
 
         // Act
         var result = await saleService.UpdateAsync(saleMock.Id, saleMock);
@@ -432,12 +432,12 @@ public class SaleServiceTest
     public async Task DeleteAsync_ShouldDeleteSale_WhenValidRequest()
     {
         // Arrange
-        var (repository, saleItemRepository, branchProductRepository, validator, rabbitMQIntegration, logger) = CreateDependencies();
+        var (repository, branchProductRepository, validator, rabbitMQIntegration, logger) = CreateDependencies();
 
         var saleMock = new SaleMock().Generate();
         repository.GetByIdAsync(saleMock.Id).Returns(saleMock);
 
-        var saleService = new SaleService(repository, saleItemRepository, branchProductRepository, validator, rabbitMQIntegration, logger);
+        var saleService = new SaleService(repository, branchProductRepository, validator, rabbitMQIntegration, logger);
 
         // Act
         await saleService.DeleteAsync(saleMock.Id);
@@ -451,14 +451,14 @@ public class SaleServiceTest
     public async Task DeleteAsync_ShouldThrowNotFoundException_WhenSaleNotFound()
     {
         // Arrange
-        var (repository, saleItemRepository, branchProductRepository, validator, rabbitMQIntegration, logger) = CreateDependencies();
+        var (repository, branchProductRepository, validator, rabbitMQIntegration, logger) = CreateDependencies();
 
         repository.GetByIdAsync(Arg.Any<int>()).Returns((Sale?)null);
 
-        var saleService = new SaleService(repository, saleItemRepository, branchProductRepository, validator, rabbitMQIntegration, logger);
+        var saleService = new SaleService(repository, branchProductRepository, validator, rabbitMQIntegration, logger);
 
         // Act
-        Func<Task> act = () => saleService.DeleteAsync(999);
+        var act = () => saleService.DeleteAsync(999);
 
         // Assert
         await act.Should().ThrowAsync<NotFoundException>()
@@ -470,12 +470,12 @@ public class SaleServiceTest
     public async Task GetByIdAsync_ShouldReturnSale_WhenValidRequest()
     {
         // Arrange
-        var (repository, saleItemRepository, branchProductRepository, validator, rabbitMQIntegration, logger) = CreateDependencies();
+        var (repository, branchProductRepository, validator, rabbitMQIntegration, logger) = CreateDependencies();
 
         var saleMock = new SaleMock().Generate();
         repository.GetWithItemsByIdAsync(saleMock.Id).Returns(saleMock);
 
-        var saleService = new SaleService(repository, saleItemRepository, branchProductRepository, validator, rabbitMQIntegration, logger);
+        var saleService = new SaleService(repository, branchProductRepository, validator, rabbitMQIntegration, logger);
 
         // Act
         var result = await saleService.GetByIdAsync(saleMock.Id);
@@ -490,11 +490,11 @@ public class SaleServiceTest
     public async Task GetByIdAsync_ShouldReturnNull_WhenSaleNotFound()
     {
         // Arrange
-        var (repository, saleItemRepository, branchProductRepository, validator, rabbitMQIntegration, logger) = CreateDependencies();
+        var (repository, branchProductRepository, validator, rabbitMQIntegration, logger) = CreateDependencies();
 
         repository.GetWithItemsByIdAsync(Arg.Any<int>()).Returns((Sale?)null);
 
-        var saleService = new SaleService(repository, saleItemRepository, branchProductRepository, validator, rabbitMQIntegration, logger);
+        var saleService = new SaleService(repository, branchProductRepository, validator, rabbitMQIntegration, logger);
 
         // Act
         var result = await saleService.GetByIdAsync(999);
@@ -503,15 +503,14 @@ public class SaleServiceTest
         result.Should().BeNull();
     }
 
-    private (ISaleRepository, ISaleItemRepository, IBranchProductRepository, IValidator<Sale>, IRabbitMQIntegration, ILogger<SaleService>) CreateDependencies()
+    private (ISaleRepository, IBranchProductRepository, IValidator<Sale>, IRabbitMQIntegration, ILogger<SaleService>) CreateDependencies()
     {
         var repository = Substitute.For<ISaleRepository>();
-        var saleItemRepository = Substitute.For<ISaleItemRepository>();
         var branchProductRepository = Substitute.For<IBranchProductRepository>();
         var validator = Substitute.For<IValidator<Sale>>();
         var rabbitMQIntegration = Substitute.For<IRabbitMQIntegration>();
         var logger = Substitute.For<ILogger<SaleService>>();
 
-        return (repository, saleItemRepository, branchProductRepository, validator, rabbitMQIntegration, logger);
+        return (repository, branchProductRepository, validator, rabbitMQIntegration, logger);
     }
 }

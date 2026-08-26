@@ -100,9 +100,9 @@ public class CreateUserHandlerTests
             Username = "InvalidUser"
         };
 
-        var failures = new List<ValidationFailure>()
+        var failures = new List<ValidationFailure>
         {
-            new ValidationFailure("Email", "Email is required")
+            new("Email", "Email is required")
         };
 
         var validationResult = new ValidationResult(failures);

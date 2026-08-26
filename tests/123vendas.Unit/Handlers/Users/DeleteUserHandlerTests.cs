@@ -54,12 +54,12 @@ public class DeleteUserHandlerTests
     public async Task Handle_Should_Throw_ValidationException_When_Command_Invalid()
     {
         // Arrange
-        int userId = -1;
+        var userId = -1;
         var command = new DeleteUserCommand(userId);
 
         var failures = new List<ValidationFailure>
         {
-            new ValidationFailure("Id", "Id must be greater than 0")
+            new("Id", "Id must be greater than 0")
         };
 
         var validationResult = new ValidationResult(failures);
@@ -78,7 +78,7 @@ public class DeleteUserHandlerTests
     public async Task Handle_Should_Throw_EntityNotFoundException_When_User_Not_Found()
     {
         // Arrange
-        int userId = 1;
+        var userId = 1;
         var command = new DeleteUserCommand(userId);
 
         _validator.ValidateAsync(command, Arg.Any<CancellationToken>())

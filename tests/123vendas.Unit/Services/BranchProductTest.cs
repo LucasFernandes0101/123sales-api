@@ -21,7 +21,7 @@ public class BranchProductServiceTest
     public async Task CreateAsync_ValidBranchProduct_ShouldCreateBranchProduct()
     {
         // Arrange
-        var (repository, productRepository, validator, logger, service) = CreateDependencies();
+        var (repository, productRepository, validator, service) = CreateDependencies();
         var branchProduct = new BranchProductMock().Generate();
         var product = new ProductMock().Generate();
 
@@ -42,13 +42,13 @@ public class BranchProductServiceTest
     public async Task CreateAsync_ProductNotFound_ShouldThrowNotFoundException()
     {
         // Arrange
-        var (repository, productRepository, validator, logger, service) = CreateDependencies();
+        var (repository, productRepository, validator, service) = CreateDependencies();
         var branchProduct = new BranchProductMock().Generate();
         validator.ValidateAsync(branchProduct).Returns(Task.FromResult(new ValidationResult()));
         productRepository.GetByIdAsync(branchProduct.ProductId).Returns(default(Product));
 
         // Act
-        Func<Task> act = () => service.CreateAsync(branchProduct);
+        var act = () => service.CreateAsync(branchProduct);
 
         // Assert
         await act.Should().ThrowAsync<NotFoundException>()
@@ -60,7 +60,7 @@ public class BranchProductServiceTest
     public async Task DeleteAsync_ValidId_ShouldDeleteBranchProduct()
     {
         // Arrange
-        var (repository, productRepository, validator, logger, service) = CreateDependencies();
+        var (repository, productRepository, validator, service) = CreateDependencies();
         var branchProduct = new BranchProductMock().Generate();
         repository.GetByIdAsync(branchProduct.Id).Returns(branchProduct);
 
@@ -76,12 +76,12 @@ public class BranchProductServiceTest
     public async Task DeleteAsync_BranchProductNotFound_ShouldThrowNotFoundException()
     {
         // Arrange
-        var (repository, productRepository, validator, logger, service) = CreateDependencies();
-        int invalidId = 999;
+        var (repository, productRepository, validator, service) = CreateDependencies();
+        var invalidId = 999;
         repository.GetByIdAsync(invalidId).Returns(default(BranchProduct));
 
         // Act
-        Func<Task> act = () => service.DeleteAsync(invalidId);
+        var act = () => service.DeleteAsync(invalidId);
 
         // Assert
         await act.Should().ThrowAsync<NotFoundException>()
@@ -93,7 +93,7 @@ public class BranchProductServiceTest
     public async Task GetAllAsync_ValidCriteria_ShouldReturnBranchProducts()
     {
         // Arrange
-        var (repository, productRepository, validator, logger, service) = CreateDependencies();
+        var (repository, productRepository, validator, service) = CreateDependencies();
         var branchProducts = new BranchProductMock().Generate(1);
         repository.GetAsync(1, 10, Arg.Any<Expression<Func<BranchProduct, bool>>?>()).Returns(new PagedResult<BranchProduct>(1, branchProducts));
 
@@ -110,7 +110,7 @@ public class BranchProductServiceTest
     public async Task GetByIdAsync_ValidId_ShouldReturnBranchProduct()
     {
         // Arrange
-        var (repository, productRepository, validator, logger, service) = CreateDependencies();
+        var (repository, productRepository, validator, service) = CreateDependencies();
         var branchProduct = new BranchProductMock().Generate();
         repository.GetByIdAsync(branchProduct.Id).Returns(branchProduct);
 
@@ -126,7 +126,7 @@ public class BranchProductServiceTest
     public async Task UpdateAsync_ValidBranchProduct_ShouldUpdateBranchProduct()
     {
         // Arrange
-        var (repository, productRepository, validator, logger, service) = CreateDependencies();
+        var (repository, productRepository, validator, service) = CreateDependencies();
         var existingBranchProduct = new BranchProductMock().Generate();
         var updateBranchProduct = new BranchProductMock().Generate();
 
@@ -142,14 +142,13 @@ public class BranchProductServiceTest
         await repository.Received(1).UpdateAsync(existingBranchProduct);
     }
 
-    private (IBranchProductRepository repository, IProductRepository productRepository, IValidator<BranchProduct> validator, ILogger<BranchProductService> logger, BranchProductService service) CreateDependencies()
+    private (IBranchProductRepository repository, IProductRepository productRepository, IValidator<BranchProduct> validator, BranchProductService service) CreateDependencies()
     {
         var repository = Substitute.For<IBranchProductRepository>();
         var productRepository = Substitute.For<IProductRepository>();
         var validator = Substitute.For<IValidator<BranchProduct>>();
-        var logger = Substitute.For<ILogger<BranchProductService>>();
-        var service = new BranchProductService(repository, productRepository, validator, logger);
+        var service = new BranchProductService(repository, productRepository, validator);
 
-        return (repository, productRepository, validator, logger, service);
+        return (repository, productRepository, validator, service);
     }
 }
