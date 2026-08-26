@@ -8,18 +8,16 @@ using System.Diagnostics.CodeAnalysis;
 namespace _123vendas.Infrastructure.Seeds;
 
 [ExcludeFromCodeCoverage]
-public class SaleSeeder : IDataSeeder
+public class SaleSeeder(PostgreDbContext dbContext) : IDataSeeder
 {
-    private readonly PostgreDbContext _dbContext;
-    public SaleSeeder(PostgreDbContext dbContext) => _dbContext = dbContext;
 
     public async Task SeedAsync(CancellationToken cancellationToken = default)
     {
-        if (await _dbContext.Sales.AnyAsync(cancellationToken))
+        if (await dbContext.Sales.AnyAsync(cancellationToken))
             return;
 
-        var user = await _dbContext.Users.FirstOrDefaultAsync(cancellationToken: cancellationToken);
-        var branch = await _dbContext.Branches.FirstOrDefaultAsync(cancellationToken: cancellationToken);
+        var user = await dbContext.Users.FirstOrDefaultAsync(cancellationToken: cancellationToken);
+        var branch = await dbContext.Branches.FirstOrDefaultAsync(cancellationToken: cancellationToken);
         
         if (user is null || branch is null) 
             return;
@@ -33,8 +31,8 @@ public class SaleSeeder : IDataSeeder
             TotalAmount = 100m
         };
 
-        _dbContext.Sales.Add(sale);
+        dbContext.Sales.Add(sale);
 
-        await _dbContext.SaveChangesAsync(cancellationToken);
+        await dbContext.SaveChangesAsync(cancellationToken);
     }
 }

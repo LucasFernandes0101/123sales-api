@@ -7,18 +7,16 @@ using System.Diagnostics.CodeAnalysis;
 namespace _123vendas.Infrastructure.Seeds;
 
 [ExcludeFromCodeCoverage]
-public class SaleItemSeeder : IDataSeeder
+public class SaleItemSeeder(PostgreDbContext dbContext) : IDataSeeder
 {
-    private readonly PostgreDbContext _dbContext;
-    public SaleItemSeeder(PostgreDbContext dbContext) => _dbContext = dbContext;
 
     public async Task SeedAsync(CancellationToken cancellationToken = default)
     {
-        if (await _dbContext.SaleItems.AnyAsync(cancellationToken))
+        if (await dbContext.SaleItems.AnyAsync(cancellationToken))
             return;
 
-        var sale = await _dbContext.Sales.FirstOrDefaultAsync(cancellationToken: cancellationToken);
-        var product = await _dbContext.Products.FirstOrDefaultAsync(cancellationToken: cancellationToken);
+        var sale = await dbContext.Sales.FirstOrDefaultAsync(cancellationToken: cancellationToken);
+        var product = await dbContext.Products.FirstOrDefaultAsync(cancellationToken: cancellationToken);
 
         if (sale is null || product is null) 
             return;
@@ -36,8 +34,8 @@ public class SaleItemSeeder : IDataSeeder
             IsCancelled = false
         };
 
-        _dbContext.SaleItems.Add(saleItem);
+        dbContext.SaleItems.Add(saleItem);
 
-        await _dbContext.SaveChangesAsync(cancellationToken);
+        await dbContext.SaveChangesAsync(cancellationToken);
     }
 }

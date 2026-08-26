@@ -9,35 +9,28 @@ using System.Diagnostics.CodeAnalysis;
 namespace _123vendas.Infrastructure.Seeds;
 
 [ExcludeFromCodeCoverage]
-public class UserSeeder : IDataSeeder
+public class UserSeeder(
+    PostgreDbContext dbContext,
+    IPasswordHasher passwordHasher) : IDataSeeder
 {
-    private readonly PostgreDbContext _dbContext;
-    private readonly IPasswordHasher _passwordHasher;
-
-    public UserSeeder(PostgreDbContext dbContext, IPasswordHasher passwordHasher)
-    {
-        _dbContext = dbContext;
-        _passwordHasher = passwordHasher;
-    }
-
     public async Task SeedAsync(CancellationToken cancellationToken = default)
     {
-        if (await _dbContext.Users.AnyAsync(cancellationToken))
+        if (await dbContext.Users.AnyAsync(cancellationToken))
             return;
 
         var users = new List<User>
         {
-            new User
+            new()
             {
                 Email = "admin@123vendas.com",
                 Username = "admin",
-                Password = _passwordHasher.HashPassword("admin123"),
-                Name = new UserName
+                Password = passwordHasher.HashPassword("admin123"),
+                Name = new()
                 {
                     Firstname = "Admin",
                     Lastname = "User"
                 },
-                Address = new UserAddress
+                Address = new()
                 {
                     City = "Cidade Exemplo",
                     Street = "Rua Principal",
@@ -49,17 +42,17 @@ public class UserSeeder : IDataSeeder
                 Status = UserStatus.Active,
                 Role = UserRole.Admin
             },
-            new User
+            new()
             {
                 Email = "vendedor@123vendas.com",
                 Username = "seller",
-                Password = _passwordHasher.HashPassword("seller123"),
-                Name = new UserName
+                Password = passwordHasher.HashPassword("seller123"),
+                Name = new()
                 {
                     Firstname = "Vendedor",
                     Lastname = "User"
                 },
-                Address = new UserAddress
+                Address = new()
                 {
                     City = "Cidade Exemplo",
                     Street = "Rua Secundária",
@@ -73,8 +66,8 @@ public class UserSeeder : IDataSeeder
             }
         };
 
-        await _dbContext.Users.AddRangeAsync(users, cancellationToken);
+        await dbContext.Users.AddRangeAsync(users, cancellationToken);
 
-        await _dbContext.SaveChangesAsync(cancellationToken);
+        await dbContext.SaveChangesAsync(cancellationToken);
     }
 }
