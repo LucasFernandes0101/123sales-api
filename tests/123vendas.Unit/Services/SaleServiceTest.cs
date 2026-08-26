@@ -427,6 +427,82 @@ public class SaleServiceTest
         await rabbitMQIntegration.Received(1).PublishMessageAsync(Arg.Is<SaleUpdatedEvent>(e => e.Id == result.Id));
     }
 
+    [Fact(DisplayName = "Delete Sale - Valid Request")]
+    [Trait("Sale", "Service")]
+    public async Task DeleteAsync_ShouldDeleteSale_WhenValidRequest()
+    {
+        // Arrange
+        var (repository, saleItemRepository, branchProductRepository, validator, rabbitMQIntegration, logger) = CreateDependencies();
+
+        var saleMock = new SaleMock().Generate();
+        repository.GetByIdAsync(saleMock.Id).Returns(saleMock);
+
+        var saleService = new SaleService(repository, saleItemRepository, branchProductRepository, validator, rabbitMQIntegration, logger);
+
+        // Act
+        await saleService.DeleteAsync(saleMock.Id);
+
+        // Assert
+        await repository.Received(1).DeleteAsync(Arg.Is<Sale>(s => s.Id == saleMock.Id));
+    }
+
+    [Fact(DisplayName = "Delete Sale - Sale Not Found")]
+    [Trait("Sale", "Service")]
+    public async Task DeleteAsync_ShouldThrowNotFoundException_WhenSaleNotFound()
+    {
+        // Arrange
+        var (repository, saleItemRepository, branchProductRepository, validator, rabbitMQIntegration, logger) = CreateDependencies();
+
+        repository.GetByIdAsync(Arg.Any<int>()).Returns((Sale?)null);
+
+        var saleService = new SaleService(repository, saleItemRepository, branchProductRepository, validator, rabbitMQIntegration, logger);
+
+        // Act
+        Func<Task> act = () => saleService.DeleteAsync(999);
+
+        // Assert
+        await act.Should().ThrowAsync<NotFoundException>()
+            .WithMessage("Sale with ID 999 not found.");
+    }
+
+    [Fact(DisplayName = "Get Sale By Id - Valid Request")]
+    [Trait("Sale", "Service")]
+    public async Task GetByIdAsync_ShouldReturnSale_WhenValidRequest()
+    {
+        // Arrange
+        var (repository, saleItemRepository, branchProductRepository, validator, rabbitMQIntegration, logger) = CreateDependencies();
+
+        var saleMock = new SaleMock().Generate();
+        repository.GetWithItemsByIdAsync(saleMock.Id).Returns(saleMock);
+
+        var saleService = new SaleService(repository, saleItemRepository, branchProductRepository, validator, rabbitMQIntegration, logger);
+
+        // Act
+        var result = await saleService.GetByIdAsync(saleMock.Id);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Should().BeEquivalentTo(saleMock);
+    }
+
+    [Fact(DisplayName = "Get Sale By Id - Sale Not Found")]
+    [Trait("Sale", "Service")]
+    public async Task GetByIdAsync_ShouldReturnNull_WhenSaleNotFound()
+    {
+        // Arrange
+        var (repository, saleItemRepository, branchProductRepository, validator, rabbitMQIntegration, logger) = CreateDependencies();
+
+        repository.GetWithItemsByIdAsync(Arg.Any<int>()).Returns((Sale?)null);
+
+        var saleService = new SaleService(repository, saleItemRepository, branchProductRepository, validator, rabbitMQIntegration, logger);
+
+        // Act
+        var result = await saleService.GetByIdAsync(999);
+
+        // Assert
+        result.Should().BeNull();
+    }
+
     private (ISaleRepository, ISaleItemRepository, IBranchProductRepository, IValidator<Sale>, IRabbitMQIntegration, ILogger<SaleService>) CreateDependencies()
     {
         var repository = Substitute.For<ISaleRepository>();
