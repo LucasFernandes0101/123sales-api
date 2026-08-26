@@ -28,11 +28,9 @@ public static class AuthenticationResolver
             };
         });
 
-        services.AddAuthorization(options =>
-        {
-            options.AddPolicy("ManagerOnly", policy =>
+        services.AddAuthorizationBuilder()
+            .AddPolicy("ManagerOnly", policy =>
                 policy.RequireRole("Manager"));
-        });
 
         return services;
     }
