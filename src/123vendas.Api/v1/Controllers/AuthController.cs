@@ -1,6 +1,7 @@
 ﻿using _123vendas.Application.DTOs.Auth;
 using _123vendas.Application.DTOs.Common;
 using _123vendas.Application.Mappers.Auth;
+using Asp.Versioning;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 

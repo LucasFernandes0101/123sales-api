@@ -1,6 +1,7 @@
 ﻿using _123vendas.Application.DTOs.Sales;
 using _123vendas.Domain.Entities;
 using AutoMapper;
+using Microsoft.Extensions.Logging.Abstractions;
 using System.Diagnostics.CodeAnalysis;
 
 namespace _123vendas.Application.Mappers.Sales;
@@ -9,7 +10,7 @@ namespace _123vendas.Application.Mappers.Sales;
 public static class SaleMappers
 {
     private static readonly IMapper _mapper = new MapperConfiguration(cfg =>
-        cfg.AddProfile<SaleMapperProfile>()).CreateMapper();
+        cfg.AddProfile<SaleMapperProfile>(), NullLoggerFactory.Instance).CreateMapper();
 
     public static List<SaleGetResponseDTO> ToDTO(this List<Sale> entities)
     {

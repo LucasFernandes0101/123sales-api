@@ -53,7 +53,7 @@ public class AuthenticateUserHandlerTests
         _validator.ValidateAsync(command, Arg.Any<CancellationToken>())
             .Returns(Task.FromResult(new ValidationResult()));
 
-        _userRepository.GetActiveByEmailAsync(command.Email).Returns(Task.FromResult(user));
+        _userRepository.GetActiveByEmailAsync(command.Email).Returns(Task.FromResult<User?>(user));
         _passwordHasher.VerifyPassword(command.Password, user.Password).Returns(true);
         _jwtTokenGenerator.GenerateTokenAsync(user).Returns(Task.FromResult("valid_token"));
 
@@ -137,7 +137,7 @@ public class AuthenticateUserHandlerTests
 
         _validator.ValidateAsync(command, Arg.Any<CancellationToken>())
             .Returns(Task.FromResult(new ValidationResult()));
-        _userRepository.GetActiveByEmailAsync(command.Email).Returns(Task.FromResult(user));
+        _userRepository.GetActiveByEmailAsync(command.Email).Returns(Task.FromResult<User?>(user));
         _passwordHasher.VerifyPassword(command.Password, user.Password).Returns(false);
 
         // Act & Assert

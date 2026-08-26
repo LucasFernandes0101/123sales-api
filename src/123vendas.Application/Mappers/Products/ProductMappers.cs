@@ -1,6 +1,7 @@
 ﻿using _123vendas.Application.DTOs.Products;
 using _123vendas.Domain.Entities;
 using AutoMapper;
+using Microsoft.Extensions.Logging.Abstractions;
 using System.Diagnostics.CodeAnalysis;
 
 namespace _123vendas.Application.Mappers.Products;
@@ -9,7 +10,7 @@ namespace _123vendas.Application.Mappers.Products;
 public static class ProductMappers
 {
     private static readonly IMapper _mapper = new MapperConfiguration(cfg =>
-        cfg.AddProfile<ProductMapperProfile>()).CreateMapper();
+        cfg.AddProfile<ProductMapperProfile>(), NullLoggerFactory.Instance).CreateMapper();
 
     public static List<ProductGetResponseDTO> ToDTO(this List<Product> entities)
     {

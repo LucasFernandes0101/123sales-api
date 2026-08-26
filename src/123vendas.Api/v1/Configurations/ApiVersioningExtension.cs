@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc.Versioning;
+﻿using Asp.Versioning;
 using Microsoft.AspNetCore.Mvc;
 
 namespace _123vendas_server.v1.Configurations;
@@ -16,9 +16,8 @@ public static class ApiVersioningExtension
                 new UrlSegmentApiVersionReader(),
                 new HeaderApiVersionReader("x-api-version"),
                 new MediaTypeApiVersionReader("x-api-version"));
-        });
-
-        services.AddVersionedApiExplorer(setup =>
+        })
+        .AddApiExplorer(setup =>
         {
             setup.GroupNameFormat = "'v'VVV";
             setup.SubstituteApiVersionInUrl = true;

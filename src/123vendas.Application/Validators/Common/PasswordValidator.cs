@@ -2,7 +2,7 @@
 
 namespace _123vendas.Application.Validators.Common;
 
-public class PasswordValidator : AbstractValidator<string>
+public class PasswordValidator : AbstractValidator<string?>
 {
     public PasswordValidator()
     {

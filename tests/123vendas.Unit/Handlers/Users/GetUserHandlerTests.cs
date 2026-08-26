@@ -39,7 +39,7 @@ public class GetUserHandlerTests
         var user = new UserMock().Generate();
         user.Id = userId;
 
-        _userRepository.GetByIdAsync(userId).Returns(Task.FromResult(user));
+        _userRepository.GetByIdAsync(userId).Returns(Task.FromResult<User?>(user));
 
         // Act
         var result = await _handler.Handle(command, CancellationToken.None);

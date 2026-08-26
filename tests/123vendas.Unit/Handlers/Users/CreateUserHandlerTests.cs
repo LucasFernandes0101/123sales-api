@@ -44,7 +44,7 @@ public class CreateUserHandlerTests
             .Returns(Task.FromResult(new ValidationResult()));
 
         _userRepository.GetActiveByEmailAsync(command.Email)
-            .Returns(Task.FromResult<User>(null));
+            .Returns(Task.FromResult<User?>(null));
 
         var mockedUser = new UserMock().Generate();
         _userRepository.AddAsync(Arg.Any<User>())
@@ -79,7 +79,7 @@ public class CreateUserHandlerTests
 
         var existingUser = new UserMock().Generate();
         _userRepository.GetActiveByEmailAsync(command.Email)
-            .Returns(Task.FromResult(existingUser));
+            .Returns(Task.FromResult<User?>(existingUser));
 
         // Act & Assert
         await Should.ThrowAsync<UserAlreadyExistsException>(async () =>

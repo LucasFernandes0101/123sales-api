@@ -2,6 +2,7 @@
 using _123vendas.Application.DTOs.Common;
 using _123vendas.Application.DTOs.Users;
 using _123vendas.Application.Mappers.Users;
+using Asp.Versioning;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

@@ -3,6 +3,7 @@ using _123vendas.Application.DTOs.Common;
 using _123vendas.Application.Mappers.Carts;
 using _123vendas.Domain.Base;
 using _123vendas.Domain.Interfaces.Services;
+using Asp.Versioning;
 using Microsoft.AspNetCore.Mvc;
 
 namespace _123vendas_server.v1.Controllers;

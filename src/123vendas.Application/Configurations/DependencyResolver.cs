@@ -75,12 +75,15 @@ public static class DependencyResolver
 
     private static void ResolveAutoMapper(this IServiceCollection services)
     {
-        services.AddAutoMapper(typeof(BranchMapperProfile));
-        services.AddAutoMapper(typeof(ProductMapperProfile));
-        services.AddAutoMapper(typeof(BranchProductMapperProfile));
-        services.AddAutoMapper(typeof(SaleMapperProfile));
-        services.AddAutoMapper(typeof(CartMapperProfile));
-        services.AddAutoMapper(typeof(UserProfile));
+        services.AddAutoMapper(cfg =>
+        {
+            cfg.AddProfile<BranchMapperProfile>();
+            cfg.AddProfile<ProductMapperProfile>();
+            cfg.AddProfile<BranchProductMapperProfile>();
+            cfg.AddProfile<SaleMapperProfile>();
+            cfg.AddProfile<CartMapperProfile>();
+            cfg.AddProfile<UserProfile>();
+        });
     }
 
     private static void ResolveFluentValidators(this IServiceCollection services)

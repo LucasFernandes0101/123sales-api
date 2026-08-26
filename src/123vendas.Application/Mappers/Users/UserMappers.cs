@@ -3,13 +3,14 @@ using _123vendas.Application.DTOs.Users;
 using _123vendas.Application.Results.Users;
 using _123vendas.Domain.Entities;
 using AutoMapper;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace _123vendas.Application.Mappers.Users;
 
 public static class UserMappers
 {
     private static readonly IMapper _mapper = new MapperConfiguration(cfg =>
-        cfg.AddProfile<UserProfile>()).CreateMapper();
+        cfg.AddProfile<UserProfile>(), NullLoggerFactory.Instance).CreateMapper();
 
     public static User ToEntity(this CreateUserCommand command)
         => _mapper.Map<User>(command);

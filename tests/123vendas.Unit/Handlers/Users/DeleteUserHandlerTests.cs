@@ -40,7 +40,7 @@ public class DeleteUserHandlerTests
         user.Id = userId;
 
         _userRepository.GetByIdAsync(userId)
-            .Returns(Task.FromResult(user));
+            .Returns(Task.FromResult<User?>(user));
 
         // Act
         await _handler.Handle(command, CancellationToken.None);

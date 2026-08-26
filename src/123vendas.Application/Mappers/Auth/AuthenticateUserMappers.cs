@@ -3,13 +3,14 @@ using _123vendas.Application.DTOs.Auth;
 using _123vendas.Application.Results.Auth;
 using _123vendas.Domain.Entities;
 using AutoMapper;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace _123vendas.Application.Mappers.Auth;
 
 public static class AuthenticateUserMappers
 {
     private static readonly IMapper _mapper = new MapperConfiguration(cfg =>
-        cfg.AddProfile<AuthenticateUserProfile>()).CreateMapper();
+        cfg.AddProfile<AuthenticateUserProfile>(), NullLoggerFactory.Instance).CreateMapper();
 
     public static AuthenticateUserCommand ToCommand(this AuthenticateUserRequestDTO dto)
     {

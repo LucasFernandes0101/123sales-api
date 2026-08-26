@@ -3,6 +3,7 @@ using _123vendas.Application.DTOs.Sales;
 using _123vendas.Application.Mappers.Sales;
 using _123vendas.Domain.Base;
 using _123vendas.Domain.Interfaces.Services;
+using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 

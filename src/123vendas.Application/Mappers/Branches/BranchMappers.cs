@@ -1,6 +1,7 @@
 ﻿using _123vendas.Application.DTOs.Branches;
 using _123vendas.Domain.Entities;
 using AutoMapper;
+using Microsoft.Extensions.Logging.Abstractions;
 using System.Diagnostics.CodeAnalysis;
 
 namespace _123vendas.Application.Mappers.Branches;
@@ -9,7 +10,7 @@ namespace _123vendas.Application.Mappers.Branches;
 public static class BranchMappers
 {
     private static readonly IMapper _mapper = new MapperConfiguration(cfg =>
-        cfg.AddProfile<BranchMapperProfile>()).CreateMapper();
+        cfg.AddProfile<BranchMapperProfile>(), NullLoggerFactory.Instance).CreateMapper();
 
     public static List<BranchGetResponseDTO> ToDTO(this List<Branch> entities)
     {
