@@ -2,9 +2,7 @@
 
 namespace _123vendas.Domain.Exceptions;
 
-public class SaleAlreadyCanceledException : BaseException
+public class SaleAlreadyCanceledException(
+    string message) : BaseException(message)
 {
-    public SaleAlreadyCanceledException(string message) : base(message)
-    {
-    }
 }

@@ -2,9 +2,7 @@
 
 namespace _123vendas.Domain.Exceptions;
 
-public class ItemQuantityLimitExceededException : BaseException
+public class ItemQuantityLimitExceededException(
+    string message) : BaseException(message)
 {
-    public ItemQuantityLimitExceededException(string message) : base(message)
-    {
-    }
 }

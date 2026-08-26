@@ -2,9 +2,7 @@
 
 namespace _123vendas.Domain.Exceptions;
 
-public class EntityAlreadyDeletedException : BaseException
+public class EntityAlreadyDeletedException(
+    string message) : BaseException(message)
 {
-    public EntityAlreadyDeletedException(string message) : base(message)
-    {
-    }
 }

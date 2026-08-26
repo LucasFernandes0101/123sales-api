@@ -2,9 +2,7 @@
 
 namespace _123vendas.Domain.Exceptions;
 
-public class UserAlreadyExistsException : BaseException
+public class UserAlreadyExistsException(
+    string message) : BaseException(message)
 {
-    public UserAlreadyExistsException(string message) : base(message)
-    {
-    }
 }

@@ -14,7 +14,7 @@ public abstract class BaseException : Exception
     {
     }
 
-    public BaseException(string message, Exception innerException)
+    public BaseException(string message, Exception? innerException)
             : base(message, innerException)
     {
     }

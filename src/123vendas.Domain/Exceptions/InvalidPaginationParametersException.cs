@@ -2,9 +2,7 @@
 
 namespace _123vendas.Domain.Exceptions;
 
-public class InvalidPaginationParametersException : BaseException
+public class InvalidPaginationParametersException(
+    string message) : BaseException(message)
 {
-    public InvalidPaginationParametersException(string message) : base(message)
-    {
-    }
 }
