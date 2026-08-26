@@ -11,4 +11,5 @@ public record SalePutRequestDTO
     public int BranchId { get; init; }
     public decimal TotalAmount { get; init; }
     public DateTimeOffset? CancelledAt { get; init; }
+    public List<SaleItemPostDTO>? Items { get; init; }
 }

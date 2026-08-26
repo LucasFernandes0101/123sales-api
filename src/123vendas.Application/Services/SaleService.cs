@@ -185,15 +185,29 @@ public class SaleService : ISaleService
 
             ValidateForUpdate(existingSale);
 
-            var updatedSale = UpdateSaleProperties(existingSale, request);
+            existingSale.Status = request.Status;
+            existingSale.Date = request.Date;
+            existingSale.UserId = request.UserId;
+            existingSale.BranchId = request.BranchId;
+            existingSale.CancelledAt = request.CancelledAt;
 
-            await ValidateSaleAsync(updatedSale);
+            if (request.Items is not null && request.Items.Count > 0)
+            {
+                existingSale.Items ??= new List<SaleItem>();
+                existingSale.Items.Clear();
 
-            await _repository.UpdateAsync(updatedSale);
+                await ProcessItemsAsync(existingSale, request.Items);
+            }
 
-            await PublishSaleMessageAsync(new SaleUpdatedEvent(updatedSale));
+            existingSale.TotalAmount = CalculateTotalAmount(existingSale.Items ?? new List<SaleItem>());
 
-            return updatedSale;
+            await ValidateSaleAsync(existingSale);
+
+            await _repository.UpdateAsync(existingSale);
+
+            await PublishSaleMessageAsync(new SaleUpdatedEvent(existingSale));
+
+            return existingSale;
         }
         catch (BaseException)
         {
@@ -333,19 +347,6 @@ public class SaleService : ISaleService
     {
         if (sale.Status == SaleStatus.Canceled)
             throw new SaleAlreadyCanceledException("Cannot update a canceled sale.");
-    }
-
-    private Sale UpdateSaleProperties(Sale existingSale, Sale request)
-    {
-        var updatedSale = existingSale;
-
-        updatedSale.Status = request.Status;
-        updatedSale.Date = request.Date;
-        updatedSale.UserId = request.UserId;
-        updatedSale.BranchId = request.BranchId;
-        updatedSale.TotalAmount = request.TotalAmount;
-
-        return updatedSale;
     }
 
     private void ValidateItemForCancellation(SaleItem saleItem)
