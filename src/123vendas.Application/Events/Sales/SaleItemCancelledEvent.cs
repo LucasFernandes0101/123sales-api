@@ -3,18 +3,10 @@ using _123vendas.Domain.Entities;
 
 namespace _123vendas.Application.Events.Sales;
 
-public class SaleItemCancelledEvent : BaseEvent
+public class SaleItemCancelledEvent(SaleItem saleItem) : BaseEvent("Sale")
 {
-    public SaleItemCancelledEvent(SaleItem saleItem) : base("Sale")
-    {
-        SaleId = saleItem.SaleId;
-        SaleItemId = saleItem.Id;
-        Sequence = saleItem.Sequence;
-        CancelledAt = saleItem.CancelledAt ?? DateTimeOffset.Now;
-    }
-
-    public int SaleId { get; set; }
-    public int SaleItemId { get; set; }
-    public short Sequence { get; set; }
-    public DateTimeOffset CancelledAt { get; set; }
+    public int SaleId { get; set; } = saleItem.SaleId;
+    public int SaleItemId { get; set; } = saleItem.Id;
+    public short Sequence { get; set; } = saleItem.Sequence;
+    public DateTimeOffset CancelledAt { get; set; } = saleItem.CancelledAt ?? DateTimeOffset.Now;
 }

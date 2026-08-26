@@ -3,14 +3,8 @@ using _123vendas.Domain.Entities;
 
 namespace _123vendas.Application.Events.Sales;
 
-public class SaleUpdatedEvent : BaseEvent
+public class SaleUpdatedEvent(Sale sale) : BaseEvent("Sale")
 {
-    public SaleUpdatedEvent(Sale sale) : base("Sale")
-    {
-        Id = sale.Id;
-        UpdatedAt = sale.UpdatedAt;
-    }
-
-    public int Id { get; set; }
-    public DateTimeOffset UpdatedAt { get; set; }
+    public int Id { get; set; } = sale.Id;
+    public DateTimeOffset UpdatedAt { get; set; } = sale.UpdatedAt;
 }
