@@ -79,7 +79,7 @@ public class RabbitMQIntegration : IRabbitMQIntegration, IDisposable
             _channel = await _persistentConnection.CreateChannelAsync();
     }
 
-    private async Task HandlePublishErrorAsync(Exception ex, int retry, string message)
+    private static async Task HandlePublishErrorAsync(Exception ex, int retry, string message)
     {
         if (retry == 9)
         {
@@ -89,7 +89,7 @@ public class RabbitMQIntegration : IRabbitMQIntegration, IDisposable
         await Task.Delay(TimeSpan.FromSeconds(Math.Pow(2, retry)));
     }
 
-    private IConnection TryConnect(ConnectionFactory connectionFactory)
+    private static IConnection TryConnect(ConnectionFactory connectionFactory)
     {
         string errorMessage = string.Empty;
 

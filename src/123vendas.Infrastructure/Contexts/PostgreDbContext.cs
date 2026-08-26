@@ -33,7 +33,7 @@ public class PostgreDbContext : DbContext
         base.OnModelCreating(builder);
     }
 
-    private void EnsureIsNotDeletedFilter(ModelBuilder builder)
+    private static void EnsureIsNotDeletedFilter(ModelBuilder builder)
     {
         foreach (var entityType in builder.Model.GetEntityTypes())
         {
