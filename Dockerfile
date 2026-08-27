@@ -5,9 +5,8 @@ COPY ["src/123vendas.Api/123vendas.Api.csproj", "src/123vendas.Api/"]
 COPY ["src/123vendas.Application/123vendas.Application.csproj", "src/123vendas.Application/"]
 COPY ["src/123vendas.Domain/123vendas.Domain.csproj", "src/123vendas.Domain/"]
 COPY ["src/123vendas.Infrastructure/123vendas.Infrastructure.csproj", "src/123vendas.Infrastructure/"]
-COPY ["123vendas-server.slnx", ""]
 
-RUN dotnet restore
+RUN dotnet restore src/123vendas.Api/123vendas.Api.csproj
 
 COPY . .
 
