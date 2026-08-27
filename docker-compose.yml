@@ -46,7 +46,7 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: Development
       ASPNETCORE_HTTP_PORTS: 8080
-      JWT_SECRETKEY: "dR8!v9Kp@zL3xWq#N5gT7mYb$FcJ2sV0"
+      JWT_SECRETKEY: "dR8!v9Kp@zL3xWq#N5gT7mYb$$FcJ2sV0"
       POSTGRES_CONNECTION_STRING: "Host=postgres;Port=5432;Database=vendas;Username=postgres;Password=postgres"
       RABBITMQ_HOSTNAME: "rabbitmq"
       RABBITMQ_USERNAME: "guest"
