@@ -11,14 +11,9 @@ using System.Linq.Expressions;
 namespace _123vendas.Infrastructure.Repositories;
 
 [ExcludeFromCodeCoverage]
-public abstract class BaseRepository<T> : IBaseRepository<T> where T : class, IBaseEntity
+public abstract class BaseRepository<T>(PostgreDbContext dbContext) : IBaseRepository<T> where T : class, IBaseEntity
 {
-    protected readonly PostgreDbContext _dbContext;
-
-    public BaseRepository(PostgreDbContext dbContext)
-    {
-        _dbContext = dbContext;
-    }
+    protected readonly PostgreDbContext _dbContext = dbContext;
 
     public async Task<PagedResult<T>> GetAsync(int page = 1,
                                                int maxResults = 10,

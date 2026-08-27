@@ -6,9 +6,6 @@ using System.Diagnostics.CodeAnalysis;
 namespace _123vendas.Infrastructure.Repositories;
 
 [ExcludeFromCodeCoverage]
-public class SaleItemRepository : BaseRepository<SaleItem>, ISaleItemRepository
+public class SaleItemRepository(PostgreDbContext context) : BaseRepository<SaleItem>(context), ISaleItemRepository
 {
-    public SaleItemRepository(PostgreDbContext dbContext) : base(dbContext)
-    {
-    }
 }

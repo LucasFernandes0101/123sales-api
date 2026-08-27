@@ -8,12 +8,8 @@ using System.Diagnostics.CodeAnalysis;
 namespace _123vendas.Infrastructure.Repositories;
 
 [ExcludeFromCodeCoverage]
-public class BranchProductRepository : BaseRepository<BranchProduct>, IBranchProductRepository
+public class BranchProductRepository(PostgreDbContext context) : BaseRepository<BranchProduct>(context), IBranchProductRepository
 {
-    public BranchProductRepository(PostgreDbContext dbContext) : base(dbContext)
-    {
-    }
-
     public async Task UpdateByProductIdAsync(int productId, string productName, ProductCategory productCategory)
     {
         await _dbContext.Set<BranchProduct>()
