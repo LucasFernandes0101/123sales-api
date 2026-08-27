@@ -19,7 +19,7 @@ namespace _123vendas.Unit.Services;
 public class BranchServiceTest
 {
     [Fact(DisplayName = "CreateAsync should create a branch successfully")]
-    public async Task CreateAsync_ValidBranch_ShouldReturnCreatedBranch()
+    public async Task CreateAsync_ShouldReturnCreatedBranch_WhenValidBranch()
     {
         // Arrange
         var (repository, validator, service) = CreateDependencies();
@@ -37,7 +37,7 @@ public class BranchServiceTest
     }
 
     [Fact(DisplayName = "CreateAsync should throw ServiceException on repository error")]
-    public async Task CreateAsync_RepositoryError_ShouldThrowServiceException()
+    public async Task CreateAsync_ShouldThrowServiceException_WhenRepositoryError()
     {
         // Arrange
         var (repository, validator, service) = CreateDependencies();
@@ -55,7 +55,7 @@ public class BranchServiceTest
     }
 
     [Fact(DisplayName = "DeleteAsync should delete a branch successfully")]
-    public async Task DeleteAsync_ValidBranchId_ShouldDeleteBranch()
+    public async Task DeleteAsync_ShouldDeleteBranch_WhenValidBranchId()
     {
         // Arrange
         var (repository, _, service) = CreateDependencies();
@@ -71,7 +71,7 @@ public class BranchServiceTest
     }
 
     [Fact(DisplayName = "DeleteAsync should throw NotFoundException if branch does not exist")]
-    public async Task DeleteAsync_BranchNotFound_ShouldThrowNotFoundException()
+    public async Task DeleteAsync_ShouldThrowNotFoundException_WhenBranchNotFound()
     {
         // Arrange
         var (repository, _, service) = CreateDependencies();
@@ -87,7 +87,7 @@ public class BranchServiceTest
     }
 
     [Fact(DisplayName = "GetAllAsync should return branches based on criteria")]
-    public async Task GetAllAsync_ValidCriteria_ShouldReturnBranches()
+    public async Task GetAllAsync_ShouldReturnBranches_WhenValidCriteria()
     {
         // Arrange
         var (repository, _, service) = CreateDependencies();
@@ -104,7 +104,7 @@ public class BranchServiceTest
     }
 
     [Fact(DisplayName = "GetByIdAsync should return the branch if exists")]
-    public async Task GetByIdAsync_ExistingId_ShouldReturnBranch()
+    public async Task GetByIdAsync_ShouldReturnBranch_WhenExistingId()
     {
         // Arrange
         var (repository, _, service) = CreateDependencies();
@@ -119,7 +119,7 @@ public class BranchServiceTest
     }
 
     [Fact(DisplayName = "GetByIdAsync should return null if branch not found")]
-    public async Task GetByIdAsync_BranchNotFound_ShouldReturnNull()
+    public async Task GetByIdAsync_ShouldReturnNull_WhenBranchNotFound()
     {
         // Arrange
         var (repository, _, service) = CreateDependencies();
@@ -134,7 +134,7 @@ public class BranchServiceTest
     }
 
     [Fact(DisplayName = "UpdateAsync should update the branch successfully")]
-    public async Task UpdateAsync_ValidBranch_ShouldUpdateBranch()
+    public async Task UpdateAsync_ShouldUpdateBranch_WhenValidBranch()
     {
         // Arrange
         var (repository, validator, service) = CreateDependencies();
@@ -154,7 +154,7 @@ public class BranchServiceTest
     }
 
     [Fact(DisplayName = "UpdateAsync should throw ServiceException on validation failure")]
-    public async Task UpdateAsync_InvalidBranch_ShouldThrowServiceException()
+    public async Task UpdateAsync_ShouldThrowServiceException_WhenInvalidBranch()
     {
         // Arrange
         var (repository, validator, service) = CreateDependencies();
@@ -175,7 +175,7 @@ public class BranchServiceTest
     }
 
     [Fact(DisplayName = "UpdateAsync should throw NotFoundException if branch does not exist")]
-    public async Task UpdateAsync_BranchNotFound_ShouldThrowNotFoundException()
+    public async Task UpdateAsync_ShouldThrowNotFoundException_WhenBranchNotFound()
     {
         // Arrange
         var (repository, _, service) = CreateDependencies();

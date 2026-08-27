@@ -18,7 +18,7 @@ public class BranchProductServiceTest
 {
     [Fact(DisplayName = "CreateAsync should create a branch product successfully")]
     [Trait("BranchProduct", "Service")]
-    public async Task CreateAsync_ValidBranchProduct_ShouldCreateBranchProduct()
+    public async Task CreateAsync_ShouldCreateBranchProduct_WhenValidBranchProduct()
     {
         // Arrange
         var (repository, productRepository, validator, service) = CreateDependencies();
@@ -39,7 +39,7 @@ public class BranchProductServiceTest
 
     [Fact(DisplayName = "CreateAsync should throw NotFoundException if product does not exist")]
     [Trait("BranchProduct", "Service")]
-    public async Task CreateAsync_ProductNotFound_ShouldThrowNotFoundException()
+    public async Task CreateAsync_ShouldThrowNotFoundException_WhenProductNotFound()
     {
         // Arrange
         var (repository, productRepository, validator, service) = CreateDependencies();
@@ -57,7 +57,7 @@ public class BranchProductServiceTest
 
     [Fact(DisplayName = "DeleteAsync should delete the branch product successfully")]
     [Trait("BranchProduct", "Service")]
-    public async Task DeleteAsync_ValidId_ShouldDeleteBranchProduct()
+    public async Task DeleteAsync_ShouldDeleteBranchProduct_WhenValidId()
     {
         // Arrange
         var (repository, productRepository, validator, service) = CreateDependencies();
@@ -73,7 +73,7 @@ public class BranchProductServiceTest
 
     [Fact(DisplayName = "DeleteAsync should throw NotFoundException if branch product does not exist")]
     [Trait("BranchProduct", "Service")]
-    public async Task DeleteAsync_BranchProductNotFound_ShouldThrowNotFoundException()
+    public async Task DeleteAsync_ShouldThrowNotFoundException_WhenBranchProductNotFound()
     {
         // Arrange
         var (repository, productRepository, validator, service) = CreateDependencies();
@@ -90,7 +90,7 @@ public class BranchProductServiceTest
 
     [Fact(DisplayName = "GetAllAsync should return a list of branch products")]
     [Trait("BranchProduct", "Service")]
-    public async Task GetAllAsync_ValidCriteria_ShouldReturnBranchProducts()
+    public async Task GetAllAsync_ShouldReturnBranchProducts_WhenValidCriteria()
     {
         // Arrange
         var (repository, productRepository, validator, service) = CreateDependencies();
@@ -108,7 +108,7 @@ public class BranchProductServiceTest
 
     [Fact(DisplayName = "GetByIdAsync should return the branch product if found")]
     [Trait("BranchProduct", "Service")]
-    public async Task GetByIdAsync_ValidId_ShouldReturnBranchProduct()
+    public async Task GetByIdAsync_ShouldReturnBranchProduct_WhenValidId()
     {
         // Arrange
         var (repository, productRepository, validator, service) = CreateDependencies();
@@ -124,7 +124,7 @@ public class BranchProductServiceTest
 
     [Fact(DisplayName = "UpdateAsync should update the branch product successfully")]
     [Trait("BranchProduct", "Service")]
-    public async Task UpdateAsync_ValidBranchProduct_ShouldUpdateBranchProduct()
+    public async Task UpdateAsync_ShouldUpdateBranchProduct_WhenValidBranchProduct()
     {
         // Arrange
         var (repository, productRepository, validator, service) = CreateDependencies();

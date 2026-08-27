@@ -122,7 +122,7 @@ public class SaleServiceTest
     [Trait("Sale", "Service")]
     [InlineData(1)]
     [InlineData(4)]
-    public async Task CreateSaleAsync_ShouldApplyDiscount_WhenValidDiscountProvided(int quantity)
+    public async Task CreateAsync_ShouldApplyDiscount_WhenValidDiscountProvided(int quantity)
     {
         // Arrange
         var (repository, branchProductRepository, validator, rabbitMQIntegration, logger) = CreateDependencies();
@@ -188,7 +188,7 @@ public class SaleServiceTest
     [InlineData(5)]
     [InlineData(10)]
     [InlineData(20)]
-    public async Task CreateSaleAsync_ShouldApplyCorrectDiscount_BasedItemQuantity(int quantity)
+    public async Task CreateAsync_ShouldApplyCorrectDiscount_WhenItemQuantityVaries(int quantity)
     {
         // Arrange
         var (repository, branchProductRepository, validator, rabbitMQIntegration, logger) = CreateDependencies();
@@ -252,7 +252,7 @@ public class SaleServiceTest
 
     [Fact(DisplayName = "Create Sale - Should Throw When Item Quantity More Than 20")]
     [Trait("Sale", "Service")]
-    public async Task CreateSaleAsync_ShouldThrow_WhenItemQuantityMoreThan20()
+    public async Task CreateAsync_ShouldThrowItemQuantityLimitExceededException_WhenItemQuantityMoreThan20()
     {
         // Arrange
         var (repository, branchProductRepository, validator, rabbitMQIntegration, logger) = CreateDependencies();

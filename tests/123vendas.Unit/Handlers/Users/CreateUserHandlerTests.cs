@@ -30,7 +30,7 @@ public class CreateUserHandlerTests
 
     [Fact(DisplayName = "Handle_Should_Create_User_Successfully")]
     [Trait("User", "Handler")]
-    public async Task Handle_Should_Create_User_Successfully()
+    public async Task Handle_ShouldCreateUser_WhenValidCommand()
     {
         // Arrange
         var command = new CreateUserCommand
@@ -64,7 +64,7 @@ public class CreateUserHandlerTests
 
     [Fact(DisplayName = "Handle_Should_Throw_UserAlreadyExistsException_When_User_Already_Exists")]
     [Trait("User", "Handler")]
-    public async Task Handle_Should_Throw_UserAlreadyExistsException_When_User_Already_Exists()
+    public async Task Handle_ShouldThrowUserAlreadyExistsException_WhenUserAlreadyExists()
     {
         // Arrange
         var command = new CreateUserCommand
@@ -90,7 +90,7 @@ public class CreateUserHandlerTests
 
     [Fact(DisplayName = "Handle_Should_Throw_ValidationException_When_Command_Invalid")]
     [Trait("User", "Handler")]
-    public async Task Handle_Should_Throw_ValidationException_When_Command_Invalid()
+    public async Task Handle_ShouldThrowValidationException_WhenCommandInvalid()
     {
         // Arrange
         var command = new CreateUserCommand

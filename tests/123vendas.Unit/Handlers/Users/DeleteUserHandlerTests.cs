@@ -27,7 +27,7 @@ public class DeleteUserHandlerTests
 
     [Fact(DisplayName = "Handle_Should_Delete_User_Successfully")]
     [Trait("User", "Handler")]
-    public async Task Handle_Should_Delete_User_Successfully()
+    public async Task Handle_ShouldDeleteUser_WhenValidCommand()
     {
         // Arrange
         var userId = 1;
@@ -51,7 +51,7 @@ public class DeleteUserHandlerTests
 
     [Fact(DisplayName = "Handle_Should_Throw_ValidationException_When_Command_Invalid")]
     [Trait("User", "Handler")]
-    public async Task Handle_Should_Throw_ValidationException_When_Command_Invalid()
+    public async Task Handle_ShouldThrowValidationException_WhenCommandInvalid()
     {
         // Arrange
         var userId = -1;
@@ -75,7 +75,7 @@ public class DeleteUserHandlerTests
 
     [Fact(DisplayName = "Handle_Should_Throw_EntityNotFoundException_When_User_Not_Found")]
     [Trait("User", "Handler")]
-    public async Task Handle_Should_Throw_EntityNotFoundException_When_User_Not_Found()
+    public async Task Handle_ShouldThrowEntityNotFoundException_WhenUserNotFound()
     {
         // Arrange
         var userId = 1;

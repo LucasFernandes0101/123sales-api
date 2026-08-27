@@ -18,7 +18,7 @@ public class CartServiceTest
 {
     [Fact(DisplayName = "CreateAsync should create a cart successfully")]
     [Trait("Cart", "Service")]
-    public async Task CreateAsync_ShouldCreate_CartSuccessfully()
+    public async Task CreateAsync_ShouldCreateCart_WhenValidInput()
     {
         // Arrange
         var (repository, validator, service) = CreateDependencies();
@@ -57,7 +57,7 @@ public class CartServiceTest
 
     [Fact(DisplayName = "Should delete cart successfully")]
     [Trait("Cart", "Service")]
-    public async Task DeleteAsync_ShouldDeleteCart()
+    public async Task DeleteAsync_ShouldDeleteCart_WhenValidId()
     {
         // Arrange
         var (repository, validator, service) = CreateDependencies();
@@ -92,7 +92,7 @@ public class CartServiceTest
 
     [Fact(DisplayName = "Should retrieve all carts successfully")]
     [Trait("Cart", "Service")]
-    public async Task GetAllAsync_ShouldReturnCarts()
+    public async Task GetAllAsync_ShouldReturnCarts_WhenValidParameters()
     {
         // Arrange
         var (repository, validator, service) = CreateDependencies();
@@ -111,7 +111,7 @@ public class CartServiceTest
 
     [Fact(DisplayName = "Should retrieve Cart by Id successfully")]
     [Trait("Cart", "Service")]
-    public async Task GetByIdAsync_ShouldReturnCart()
+    public async Task GetByIdAsync_ShouldReturnCart_WhenCartExists()
     {
         // Arrange
         var (repository, validator, service) = CreateDependencies();
@@ -146,7 +146,7 @@ public class CartServiceTest
 
     [Fact(DisplayName = "Should update cart successfully")]
     [Trait("Cart", "Service")]
-    public async Task UpdateAsync_ShouldUpdateCart()
+    public async Task UpdateAsync_ShouldUpdateCart_WhenValidInput()
     {
         // Arrange
         var (repository, validator, service) = CreateDependencies();
@@ -167,7 +167,7 @@ public class CartServiceTest
 
     [Fact(DisplayName = "Should update quantity of existing products in the cart")]
     [Trait("Cart", "Service")]
-    public async Task UpdateAsync_ShouldUpdateQuantityOfExistingProducts()
+    public async Task UpdateAsync_ShouldUpdateQuantity_WhenProductsExist()
     {
         // Arrange
         var (repository, validator, service) = CreateDependencies();
@@ -202,7 +202,7 @@ public class CartServiceTest
 
     [Fact(DisplayName = "Should throw NotFoundException when cart not found on update")]
     [Trait("Cart", "Service")]
-    public async Task UpdateAsync_ShouldThrowNotFoundException_CartNotFound()
+    public async Task UpdateAsync_ShouldThrowNotFoundException_WhenCartNotFound()
     {
         // Arrange
         var (repository, validator, service) = CreateDependencies();

@@ -27,7 +27,7 @@ public class GetUserHandlerTests
 
     [Fact(DisplayName = "Handle_Should_Return_GetUserResult_When_User_Exists")]
     [Trait("User", "Handler")]
-    public async Task Handle_Should_Return_GetUserResult_When_User_Exists()
+    public async Task Handle_ShouldReturnGetUserResult_WhenUserExists()
     {
         // Arrange
         var userId = 1;
@@ -53,7 +53,7 @@ public class GetUserHandlerTests
 
     [Fact(DisplayName = "Handle_Should_Throw_ValidationException_When_Command_Invalid")]
     [Trait("User", "Handler")]
-    public async Task Handle_Should_Throw_ValidationException_When_Command_Invalid()
+    public async Task Handle_ShouldThrowValidationException_WhenCommandInvalid()
     {
         // Arrange
         var userId = -1;
@@ -78,7 +78,7 @@ public class GetUserHandlerTests
 
     [Fact(DisplayName = "Handle_Should_Not_Throw_When_User_Not_Found")]
     [Trait("User", "Handler")]
-    public async Task Handle_Should_Not_Throw_When_User_Not_Found()
+    public async Task Handle_ShouldReturnNull_WhenUserNotFound()
     {
         // Arrange
         var userId = 1;
