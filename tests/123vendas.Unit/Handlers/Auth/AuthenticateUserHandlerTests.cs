@@ -1,4 +1,4 @@
-﻿using _123vendas.Application.Commands.Auth;
+using _123vendas.Application.Commands.Auth;
 using _123vendas.Application.Handlers.Auth;
 using _123vendas.Domain.Entities;
 using _123vendas.Domain.Enums;
@@ -53,7 +53,7 @@ public class AuthenticateUserHandlerTests
         _validator.ValidateAsync(command, Arg.Any<CancellationToken>())
             .Returns(Task.FromResult(new ValidationResult()));
 
-        _userRepository.GetActiveByEmailAsync(command.Email).Returns(Task.FromResult(user));
+        _userRepository.GetActiveByEmailAsync(command.Email).Returns(Task.FromResult<User?>(user));
         _passwordHasher.VerifyPassword(command.Password, user.Password).Returns(true);
         _jwtTokenGenerator.GenerateTokenAsync(user).Returns(Task.FromResult("valid_token"));
 
@@ -81,15 +81,15 @@ public class AuthenticateUserHandlerTests
         };
 
         var failures = new List<ValidationFailure>
-            {
-                new ValidationFailure("Email", "Email is required")
-            };
+        {
+            new("Email", "Email is required")
+        };
 
         _validator.ValidateAsync(command, Arg.Any<CancellationToken>())
             .Returns(Task.FromResult(new ValidationResult(failures)));
 
         // Act & Assert
-        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
+        var act = async () => await _handler.Handle(command, CancellationToken.None);
         await act.Should().ThrowAsync<ValidationException>();
     }
 
@@ -110,7 +110,7 @@ public class AuthenticateUserHandlerTests
         _userRepository.GetActiveByEmailAsync(command.Email).Returns(Task.FromResult<User?>(default));
 
         // Act & Assert
-        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
+        var act = async () => await _handler.Handle(command, CancellationToken.None);
         await act.Should().ThrowAsync<UnauthorizedUserException>()
             .WithMessage("Email or password is invalid.");
     }
@@ -137,11 +137,11 @@ public class AuthenticateUserHandlerTests
 
         _validator.ValidateAsync(command, Arg.Any<CancellationToken>())
             .Returns(Task.FromResult(new ValidationResult()));
-        _userRepository.GetActiveByEmailAsync(command.Email).Returns(Task.FromResult(user));
+        _userRepository.GetActiveByEmailAsync(command.Email).Returns(Task.FromResult<User?>(user));
         _passwordHasher.VerifyPassword(command.Password, user.Password).Returns(false);
 
         // Act & Assert
-        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
+        var act = async () => await _handler.Handle(command, CancellationToken.None);
         await act.Should().ThrowAsync<UnauthorizedUserException>()
             .WithMessage("Email or password is invalid.");
     }

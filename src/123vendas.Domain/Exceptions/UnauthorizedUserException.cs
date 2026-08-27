@@ -2,9 +2,7 @@
 
 namespace _123vendas.Domain.Exceptions;
 
-public class UnauthorizedUserException : BaseException
+public class UnauthorizedUserException(
+    string message) : BaseException(message)
 {
-    public UnauthorizedUserException(string message) : base(message)
-    {
-    }
 }

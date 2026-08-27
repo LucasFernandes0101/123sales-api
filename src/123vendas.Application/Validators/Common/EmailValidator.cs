@@ -3,7 +3,7 @@ using System.Text.RegularExpressions;
 
 namespace _123vendas.Application.Validators.Common;
 
-public class EmailValidator : AbstractValidator<string>
+public class EmailValidator : AbstractValidator<string?>
 {
     public EmailValidator()
     {
@@ -16,7 +16,7 @@ public class EmailValidator : AbstractValidator<string>
             .WithMessage("The provided email address is not valid.");
     }
 
-    private bool BeValidEmail(string email)
+    private bool BeValidEmail(string? email)
     {
         if (string.IsNullOrWhiteSpace(email))
             return false;

@@ -9,41 +9,32 @@ using MediatR;
 
 namespace _123vendas.Application.Handlers.Users;
 
-public class CreateUserHandler : IRequestHandler<CreateUserCommand, CreateUserResult>
+public class CreateUserHandler(
+    IUserRepository userRepository,
+    IPasswordHasher passwordHasher,
+    IValidator<CreateUserCommand> validator) : IRequestHandler<CreateUserCommand, CreateUserResult>
 {
-    private readonly IUserRepository _userRepository;
-    private readonly IPasswordHasher _passwordHasher;
-    private readonly IValidator<CreateUserCommand> _validator;
-    public CreateUserHandler(IUserRepository userRepository,
-                             IPasswordHasher passwordHasher,
-                             IValidator<CreateUserCommand> validator)
-    {
-        _userRepository = userRepository;
-        _passwordHasher = passwordHasher;
-        _validator = validator;
-    }
-
     public async Task<CreateUserResult> Handle(CreateUserCommand command, CancellationToken cancellationToken)
     {
         await ValidateUserAsync(command, cancellationToken);
 
-        var result = await _userRepository.GetActiveByEmailAsync(command.Email!);
+        var result = await userRepository.GetActiveByEmailAsync(command.Email!, cancellationToken);
 
         if (result is not null)
             throw new UserAlreadyExistsException($"User with email {command.Email} already exists");
 
         var user = command.ToEntity();
 
-        user.Password = _passwordHasher.HashPassword(command.Password!);
+        user.Password = passwordHasher.HashPassword(command.Password!);
 
-        var createdUser = await _userRepository.AddAsync(user);
+        var createdUser = await userRepository.AddAsync(user, cancellationToken);
 
         return createdUser.ToCreateResult();
     }
 
     private async Task ValidateUserAsync(CreateUserCommand command, CancellationToken cancellationToken)
     {
-        var validation = await _validator.ValidateAsync(command, cancellationToken);
+        var validation = await validator.ValidateAsync(command, cancellationToken);
 
         if (!validation.IsValid)
             throw new ValidationException(validation.Errors);

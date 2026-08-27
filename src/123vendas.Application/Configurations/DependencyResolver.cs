@@ -34,7 +34,6 @@ public static class DependencyResolver
 {
     public static IServiceCollection ResolveDependencies(this IServiceCollection services)
     {
-        services.ResolveAutoMapper();
         services.ResolveFluentValidators();
         services.ResolveRepositories();
         services.ResolveServices();
@@ -71,16 +70,6 @@ public static class DependencyResolver
         services.AddScoped<IProductService, ProductService>();
         services.AddScoped<ISaleService, SaleService>();
         services.AddScoped<ICartService, CartService>();
-    }
-
-    private static void ResolveAutoMapper(this IServiceCollection services)
-    {
-        services.AddAutoMapper(typeof(BranchMapperProfile));
-        services.AddAutoMapper(typeof(ProductMapperProfile));
-        services.AddAutoMapper(typeof(BranchProductMapperProfile));
-        services.AddAutoMapper(typeof(SaleMapperProfile));
-        services.AddAutoMapper(typeof(CartMapperProfile));
-        services.AddAutoMapper(typeof(UserProfile));
     }
 
     private static void ResolveFluentValidators(this IServiceCollection services)

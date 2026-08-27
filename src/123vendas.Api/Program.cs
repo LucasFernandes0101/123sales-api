@@ -21,11 +21,11 @@ builder.Services.AddCustomApiVersioning();
 
 builder.Services.AddEndpointsApiExplorer();
 
-builder.Services.AddSwaggerGen();
-
 builder.Services.ResolveDependencies();
 
 builder.Services.AddAuthenticationConfiguration();
+
+builder.Services.AddHealthChecks();
 
 var app = builder.Build();
 
@@ -42,9 +42,9 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+app.UseMiddleware<ExceptionMiddleware>();
 
-app.UseMiddleware(typeof(ExceptionMiddleware));
+app.MapHealthChecks("/health");
 
 app.UseAuthentication();
 app.UseAuthorization();
@@ -52,3 +52,5 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
+public partial class Program { }

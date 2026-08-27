@@ -362,3 +362,6 @@ MigrationBackup/
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
 /src/123vendas.Api/Properties/launchSettings.json
+
+# Product Requirements Document
+PRD.md

@@ -7,17 +7,15 @@ using System.Diagnostics.CodeAnalysis;
 namespace _123vendas.Infrastructure.Seeds;
 
 [ExcludeFromCodeCoverage]
-public class CartSeeder : IDataSeeder
+public class CartSeeder(PostgreDbContext dbContext) : IDataSeeder
 {
-    private readonly PostgreDbContext _dbContext;
-    public CartSeeder(PostgreDbContext dbContext) => _dbContext = dbContext;
 
     public async Task SeedAsync(CancellationToken cancellationToken = default)
     {
-        if (await _dbContext.Carts.AnyAsync(cancellationToken))
+        if (await dbContext.Carts.AnyAsync(cancellationToken))
             return;
 
-        var user = await _dbContext.Users.FirstOrDefaultAsync(cancellationToken: cancellationToken);
+        var user = await dbContext.Users.FirstOrDefaultAsync(cancellationToken: cancellationToken);
         if (user == null) return;
 
         var cart = new Cart
@@ -26,8 +24,8 @@ public class CartSeeder : IDataSeeder
             Date = DateTime.UtcNow,
         };
 
-        _dbContext.Carts.Add(cart);
+        dbContext.Carts.Add(cart);
 
-        await _dbContext.SaveChangesAsync(cancellationToken);
+        await dbContext.SaveChangesAsync(cancellationToken);
     }
 }

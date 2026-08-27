@@ -8,37 +8,24 @@ using MediatR;
 
 namespace _123vendas.Application.Handlers.Auth;
 
-public class AuthenticateUserHandler : IRequestHandler<AuthenticateUserCommand, AuthenticateUserResult>
+public class AuthenticateUserHandler(
+    IUserRepository userRepository,
+    IPasswordHasher passwordHasher,
+    IJwtTokenGenerator jwtTokenGenerator,
+    IValidator<AuthenticateUserCommand> validator) : IRequestHandler<AuthenticateUserCommand, AuthenticateUserResult>
 {
-    private readonly IUserRepository _userRepository;
-    private readonly IPasswordHasher _passwordHasher;
-    private readonly IJwtTokenGenerator _jwtTokenGenerator;
-    private readonly IValidator<AuthenticateUserCommand> _validator;
-
-    public AuthenticateUserHandler(
-        IUserRepository userRepository,
-        IPasswordHasher passwordHasher,
-        IJwtTokenGenerator jwtTokenGenerator,
-        IValidator<AuthenticateUserCommand> validator)
-    {
-        _userRepository = userRepository;
-        _passwordHasher = passwordHasher;
-        _jwtTokenGenerator = jwtTokenGenerator;
-        _validator = validator;
-    }
-
     public async Task<AuthenticateUserResult> Handle(AuthenticateUserCommand request, CancellationToken cancellationToken)
     {
         await ValidateRequestAsync(request, cancellationToken);
 
-        var user = await _userRepository.GetActiveByEmailAsync(request.Email!);
+        var user = await userRepository.GetActiveByEmailAsync(request.Email!, cancellationToken);
 
-        if (user is null || !_passwordHasher.VerifyPassword(request.Password!, user.Password!))
+        if (user is null || !passwordHasher.VerifyPassword(request.Password!, user.Password!))
             throw new UnauthorizedUserException("Email or password is invalid.");
 
-        var token = await _jwtTokenGenerator.GenerateTokenAsync(user);
+        var token = await jwtTokenGenerator.GenerateTokenAsync(user, cancellationToken);
 
-        return new AuthenticateUserResult
+        return new()
         {
             Id = user.Id,
             Token = token,
@@ -50,7 +37,7 @@ public class AuthenticateUserHandler : IRequestHandler<AuthenticateUserCommand, 
 
     private async Task ValidateRequestAsync(AuthenticateUserCommand request, CancellationToken cancellationToken)
     {
-        var validation = await _validator.ValidateAsync(request, cancellationToken);
+        var validation = await validator.ValidateAsync(request, cancellationToken);
 
         if (!validation.IsValid)
             throw new ValidationException(validation.Errors);

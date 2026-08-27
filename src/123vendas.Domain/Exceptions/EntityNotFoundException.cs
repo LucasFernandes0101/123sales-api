@@ -2,9 +2,7 @@
 
 namespace _123vendas.Domain.Exceptions;
 
-public class EntityNotFoundException : BaseException
+public class EntityNotFoundException(
+    string message) : BaseException(message)
 {
-    public EntityNotFoundException(string message) : base(message)
-    {
-    }
 }

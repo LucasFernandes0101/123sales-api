@@ -8,13 +8,9 @@ using System.Diagnostics.CodeAnalysis;
 namespace _123vendas.Infrastructure.Repositories;
 
 [ExcludeFromCodeCoverage]
-public class UserRepository : BaseRepository<User>, IUserRepository
+public class UserRepository(PostgreDbContext context) : BaseRepository<User>(context), IUserRepository
 {
-    public UserRepository(PostgreDbContext dbContext) : base(dbContext)
-    {
-    }
-
-    public async Task<User?> GetActiveByEmailAsync(string email)
+    public async Task<User?> GetActiveByEmailAsync(string email, CancellationToken cancellationToken = default)
         => await _dbContext.Users.FirstOrDefaultAsync(u => u.Email == email &&
-                                                           u.Status == UserStatus.Active);
+                                                           u.Status == UserStatus.Active, cancellationToken);
 }

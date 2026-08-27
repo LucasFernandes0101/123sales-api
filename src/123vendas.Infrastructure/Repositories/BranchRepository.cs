@@ -6,9 +6,6 @@ using System.Diagnostics.CodeAnalysis;
 namespace _123vendas.Infrastructure.Repositories;
 
 [ExcludeFromCodeCoverage]
-public class BranchRepository : BaseRepository<Branch>, IBranchRepository
+public class BranchRepository(PostgreDbContext context) : BaseRepository<Branch>(context), IBranchRepository
 {
-    public BranchRepository(PostgreDbContext dbContext) : base(dbContext)
-    {
-    }
 }

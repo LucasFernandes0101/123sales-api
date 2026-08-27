@@ -1,6 +1,7 @@
 ﻿using _123vendas.Application.DTOs.Auth;
 using _123vendas.Application.DTOs.Common;
 using _123vendas.Application.Mappers.Auth;
+using Asp.Versioning;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
@@ -9,28 +10,30 @@ namespace _123vendas_server.v1.Controllers;
 [ApiController]
 [Route("api/v{version:apiVersion}/[controller]")]
 [ApiVersion("1.0")]
-public class AuthController : ControllerBase
+[Tags("Auth")]
+[Produces("application/json")]
+public class AuthController(IMediator mediator) : ControllerBase
 {
-    private readonly IMediator _mediator;
-    public AuthController(IMediator mediator)
-    {
-        _mediator = mediator;
-    }
 
     /// <summary>
     /// Authenticates a user with their credentials.
     /// </summary>
-    /// <param name="request">The authentication request.</param>
+    /// <param name="request">The authentication request containing email and password.</param>
     /// <returns>Authentication token if successful.</returns>
+    /// <response code="200">Returns the authentication token and user details.</response>
+    /// <response code="400">If the request is invalid or missing required fields.</response>
+    /// <response code="401">If the credentials are invalid.</response>
     [HttpPost]
     [ProducesResponseType(typeof(AuthenticateUserResponseDTO), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponseDTO), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponseDTO), StatusCodes.Status401Unauthorized)]
-    public async Task<ActionResult<AuthenticateUserResponseDTO>> AuthenticateUser([FromBody] AuthenticateUserRequestDTO request)
+    public async Task<ActionResult<AuthenticateUserResponseDTO>> AuthenticateUser(
+        [FromBody] AuthenticateUserRequestDTO request,
+        CancellationToken cancellationToken)
     {
         var command = request.ToCommand();
 
-        var result = await _mediator.Send(command);
+        var result = await mediator.Send(command, cancellationToken);
 
         var response = result.ToResponseDTO();
 

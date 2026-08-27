@@ -2,13 +2,8 @@
 
 namespace _123vendas.Domain.Exceptions;
 
-public class RabbitMQMessageException : BaseException
+public class RabbitMQMessageException(
+    string message,
+    Exception? innerException = null) : BaseException(message, innerException)
 {
-    public RabbitMQMessageException(string message) : base(message)
-    {
-    }
-
-    public RabbitMQMessageException(string message, Exception innerException) : base(message, innerException)
-    {
-    }
 }

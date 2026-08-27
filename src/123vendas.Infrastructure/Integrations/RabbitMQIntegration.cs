@@ -14,43 +14,43 @@ public class RabbitMQIntegration : IRabbitMQIntegration, IDisposable
 {
     private readonly ConnectionFactory _connectionFactory;
     private IConnection? _persistentConnection;
-    private IModel? _channel;
+    private IChannel? _channel;
 
     public RabbitMQIntegration()
     {
-        _connectionFactory = new ConnectionFactory
+        _connectionFactory = new()
         {
-            HostName = Environment.GetEnvironmentVariable("RABBITMQ_HOSTNAME"),
-            UserName = Environment.GetEnvironmentVariable("RABBITMQ_USERNAME"),
-            VirtualHost = Environment.GetEnvironmentVariable("RABBITMQ_VIRTUALHOST"),
-            Password = Environment.GetEnvironmentVariable("RABBITMQ_PASSWORD")
+            HostName = Environment.GetEnvironmentVariable("RABBITMQ_HOSTNAME") ?? "localhost",
+            UserName = Environment.GetEnvironmentVariable("RABBITMQ_USERNAME") ?? "guest",
+            VirtualHost = Environment.GetEnvironmentVariable("RABBITMQ_VIRTUALHOST") ?? "/",
+            Password = Environment.GetEnvironmentVariable("RABBITMQ_PASSWORD") ?? "guest"
         };
     }
 
-    public async Task PublishMessageAsync(BaseEvent @event)
+    public async Task PublishMessageAsync(BaseEvent @event, CancellationToken cancellationToken = default)
     {
-        EnsureConnected();
+        await EnsureConnectedAsync();
 
         string exchangeName = $"ex_{@event.Domain.ToLower()}";
-        _channel.ExchangeDeclare(exchangeName, ExchangeType.Direct, durable: true);
+        await _channel!.ExchangeDeclareAsync(exchangeName, ExchangeType.Direct, durable: true, cancellationToken: cancellationToken);
 
         string routingKey = @event.GetType().Name;
         string message = JsonConvert.SerializeObject(@event);
         byte[] body = Encoding.UTF8.GetBytes(message);
 
-        var basicProperties = _channel!.CreateBasicProperties();
-        basicProperties.Persistent = true;
+        var basicProperties = new BasicProperties { Persistent = true };
 
         for (int retry = 0; retry < 10; retry++)
         {
             try
             {
-                _channel.BasicPublish(
+                await _channel!.BasicPublishAsync(
                     exchange: exchangeName,
                     routingKey: routingKey,
                     mandatory: true,
                     basicProperties: basicProperties,
-                    body: body
+                    body: body,
+                    cancellationToken: cancellationToken
                 );
                 return;
             }
@@ -71,16 +71,16 @@ public class RabbitMQIntegration : IRabbitMQIntegration, IDisposable
         throw new RabbitMQMessageException("Failed to publish message after multiple attempts.");
     }
 
-    private void EnsureConnected()
+    private async Task EnsureConnectedAsync()
     {
         if (_persistentConnection is null || !_persistentConnection.IsOpen)
             _persistentConnection = TryConnect(_connectionFactory);
 
         if (_channel is null || _channel.IsClosed)
-            _channel = _persistentConnection.CreateModel();
+            _channel = await _persistentConnection.CreateChannelAsync();
     }
 
-    private async Task HandlePublishErrorAsync(Exception ex, int retry, string message)
+    private static async Task HandlePublishErrorAsync(Exception ex, int retry, string message)
     {
         if (retry == 9)
         {
@@ -90,7 +90,7 @@ public class RabbitMQIntegration : IRabbitMQIntegration, IDisposable
         await Task.Delay(TimeSpan.FromSeconds(Math.Pow(2, retry)));
     }
 
-    private IConnection TryConnect(ConnectionFactory connectionFactory)
+    private static IConnection TryConnect(ConnectionFactory connectionFactory)
     {
         string errorMessage = string.Empty;
 
@@ -98,7 +98,7 @@ public class RabbitMQIntegration : IRabbitMQIntegration, IDisposable
         {
             try
             {
-                return connectionFactory.CreateConnection();
+                return connectionFactory.CreateConnectionAsync().GetAwaiter().GetResult();
             }
             catch (BrokerUnreachableException ex)
             {
@@ -117,9 +117,10 @@ public class RabbitMQIntegration : IRabbitMQIntegration, IDisposable
 
     public void Dispose()
     {
-        _channel?.Close();
-        _persistentConnection?.Close();
+        _channel?.CloseAsync().GetAwaiter().GetResult();
+        _persistentConnection?.CloseAsync().GetAwaiter().GetResult();
         _channel?.Dispose();
         _persistentConnection?.Dispose();
+        GC.SuppressFinalize(this);
     }
 }

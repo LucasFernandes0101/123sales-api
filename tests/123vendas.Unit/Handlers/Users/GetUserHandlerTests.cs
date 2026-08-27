@@ -1,9 +1,9 @@
-﻿using _123vendas.Application.Commands.Users;
+using _123vendas.Application.Commands.Users;
 using _123vendas.Application.Handlers.Users;
 using _123vendas.Domain.Entities;
 using _123vendas.Domain.Exceptions;
 using _123vendas.Domain.Interfaces.Repositories;
-using _123vendas.Tests.Mocks.Entities;
+using _123vendas.Unit.Mocks.Entities;
 using FluentValidation;
 using FluentValidation.Results;
 using NSubstitute;
@@ -27,7 +27,7 @@ public class GetUserHandlerTests
 
     [Fact(DisplayName = "Handle_Should_Return_GetUserResult_When_User_Exists")]
     [Trait("User", "Handler")]
-    public async Task Handle_Should_Return_GetUserResult_When_User_Exists()
+    public async Task Handle_ShouldReturnGetUserResult_WhenUserExists()
     {
         // Arrange
         var userId = 1;
@@ -39,7 +39,7 @@ public class GetUserHandlerTests
         var user = new UserMock().Generate();
         user.Id = userId;
 
-        _userRepository.GetByIdAsync(userId).Returns(Task.FromResult(user));
+        _userRepository.GetByIdAsync(userId).Returns(Task.FromResult<User?>(user));
 
         // Act
         var result = await _handler.Handle(command, CancellationToken.None);
@@ -53,15 +53,15 @@ public class GetUserHandlerTests
 
     [Fact(DisplayName = "Handle_Should_Throw_ValidationException_When_Command_Invalid")]
     [Trait("User", "Handler")]
-    public async Task Handle_Should_Throw_ValidationException_When_Command_Invalid()
+    public async Task Handle_ShouldThrowValidationException_WhenCommandInvalid()
     {
         // Arrange
-        int userId = -1;
+        var userId = -1;
         var command = new GetUserCommand(userId);
 
         var failures = new List<ValidationFailure>
         {
-            new ValidationFailure("Id", "Id must be greater than 0")
+            new("Id", "Id must be greater than 0")
         };
 
         var validationResult = new ValidationResult(failures);
@@ -78,10 +78,10 @@ public class GetUserHandlerTests
 
     [Fact(DisplayName = "Handle_Should_Not_Throw_When_User_Not_Found")]
     [Trait("User", "Handler")]
-    public async Task Handle_Should_Not_Throw_When_User_Not_Found()
+    public async Task Handle_ShouldReturnNull_WhenUserNotFound()
     {
         // Arrange
-        int userId = 1;
+        var userId = 1;
         var command = new GetUserCommand(userId);
 
         _validator.ValidateAsync(command, Arg.Any<CancellationToken>())

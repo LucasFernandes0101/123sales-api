@@ -7,13 +7,9 @@ using System.Diagnostics.CodeAnalysis;
 namespace _123vendas.Infrastructure.Repositories;
 
 [ExcludeFromCodeCoverage]
-public class SaleRepository : BaseRepository<Sale>, ISaleRepository
+public class SaleRepository(PostgreDbContext context) : BaseRepository<Sale>(context), ISaleRepository
 {
-    public SaleRepository(PostgreDbContext dbContext) : base(dbContext)
-    {
-    }
-
-    public async Task<Sale?> GetWithItemsByIdAsync(int id)
+    public async Task<Sale?> GetWithItemsByIdAsync(int id, CancellationToken cancellationToken = default)
         => await _dbContext.Sales.Include(s => s.Items)
-                                 .FirstOrDefaultAsync(s => s.Id == id);
+                                 .FirstOrDefaultAsync(s => s.Id == id, cancellationToken);
 }

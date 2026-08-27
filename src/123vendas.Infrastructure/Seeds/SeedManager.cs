@@ -4,21 +4,19 @@ using System.Diagnostics.CodeAnalysis;
 namespace _123vendas.Infrastructure.Seeds;
 
 [ExcludeFromCodeCoverage]
-public class SeedManager : ISeedManager
+public class SeedManager(IEnumerable<IDataSeeder> seeders) : ISeedManager
 {
-    private readonly IEnumerable<IDataSeeder> _seeders;
-    public SeedManager(IEnumerable<IDataSeeder> seeders) => _seeders = seeders;
 
     public async Task SeedAsync(CancellationToken cancellationToken = default)
     {
         if (!IsSeedEnabled())
             return;
 
-        foreach (var seeder in _seeders)
+        foreach (var seeder in seeders)
             await seeder.SeedAsync(cancellationToken);
     }
 
-    private bool IsSeedEnabled()
+    private static bool IsSeedEnabled()
     {
         var value = Environment.GetEnvironmentVariable("SEED_DATABASE_FLAG");
 

@@ -7,25 +7,23 @@ using System.Diagnostics.CodeAnalysis;
 namespace _123vendas.Infrastructure.Seeds;
 
 [ExcludeFromCodeCoverage]
-public class BranchProductSeeder : IDataSeeder
+public class BranchProductSeeder(PostgreDbContext dbContext) : IDataSeeder
 {
-    private readonly PostgreDbContext _dbContext;
-    public BranchProductSeeder(PostgreDbContext dbContext) => _dbContext = dbContext;
 
     public async Task SeedAsync(CancellationToken cancellationToken = default)
     {
-        if (await _dbContext.BranchProducts.AnyAsync(cancellationToken))
+        if (await dbContext.BranchProducts.AnyAsync(cancellationToken))
             return;
 
-        var branch = await _dbContext.Branches.FirstOrDefaultAsync(cancellationToken: cancellationToken);
-        var product = await _dbContext.Products.FirstOrDefaultAsync(cancellationToken: cancellationToken);
+        var branch = await dbContext.Branches.FirstOrDefaultAsync(cancellationToken: cancellationToken);
+        var product = await dbContext.Products.FirstOrDefaultAsync(cancellationToken: cancellationToken);
         
         if (branch is null || product is null) 
             return;
 
         var branchProducts = new List<BranchProduct>
         {
-            new BranchProduct
+            new()
             {
                 BranchId = branch.Id,
                 ProductId = product.Id,
@@ -37,8 +35,8 @@ public class BranchProductSeeder : IDataSeeder
             }
         };
 
-        _dbContext.BranchProducts.AddRange(branchProducts);
+        dbContext.BranchProducts.AddRange(branchProducts);
 
-        await _dbContext.SaveChangesAsync(cancellationToken);
+        await dbContext.SaveChangesAsync(cancellationToken);
     }
 }

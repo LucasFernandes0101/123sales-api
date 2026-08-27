@@ -2,9 +2,7 @@
 
 namespace _123vendas.Domain.Exceptions;
 
-public class ItemOutOfStockException : BaseException
+public class ItemOutOfStockException(
+    string message) : BaseException(message)
 {
-    public ItemOutOfStockException(string message) : base(message)
-    {
-    }
 }

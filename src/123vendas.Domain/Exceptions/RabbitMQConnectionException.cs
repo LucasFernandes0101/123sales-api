@@ -2,9 +2,7 @@
 
 namespace _123vendas.Domain.Exceptions;
 
-public class RabbitMQConnectionException : BaseException
+public class RabbitMQConnectionException(
+    string message) : BaseException(message)
 {
-    public RabbitMQConnectionException(string message) : base(message)
-    {
-    }
 }

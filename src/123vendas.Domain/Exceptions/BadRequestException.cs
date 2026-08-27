@@ -2,9 +2,7 @@
 
 namespace _123vendas.Domain.Exceptions;
 
-public class BadRequestException : BaseException
+public class BadRequestException(
+    string message) : BaseException(message)
 {
-    public BadRequestException(string message) : base(message)
-    {
-    }
 }

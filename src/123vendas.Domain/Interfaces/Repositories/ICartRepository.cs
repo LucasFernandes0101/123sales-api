@@ -5,5 +5,5 @@ namespace _123vendas.Domain.Interfaces.Repositories;
 
 public interface ICartRepository : IBaseRepository<Cart>
 {
-    Task<Cart?> GetWithProductsByIdAsync(int id);
+    Task<Cart?> GetWithProductsByIdAsync(int id, CancellationToken cancellationToken = default);
 }

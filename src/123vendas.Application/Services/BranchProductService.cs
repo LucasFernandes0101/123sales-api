@@ -4,49 +4,33 @@ using _123vendas.Domain.Exceptions;
 using _123vendas.Domain.Interfaces.Repositories;
 using _123vendas.Domain.Interfaces.Services;
 using FluentValidation;
-using Microsoft.Extensions.Logging;
 using System.Linq.Expressions;
 
 namespace _123vendas.Application.Services;
 
-public class BranchProductService : IBranchProductService
+public class BranchProductService(
+    IBranchProductRepository repository,
+    IProductRepository productRepository,
+    IValidator<BranchProduct> validator) : IBranchProductService
 {
-    private readonly IBranchProductRepository _repository;
-    private readonly IProductRepository _productRepository;
-    private readonly IValidator<BranchProduct> _validator;
-    private readonly ILogger<BranchProductService> _logger;
-
-    public BranchProductService(
-        IBranchProductRepository repository,
-        IProductRepository productRepository,
-        IValidator<BranchProduct> validator,
-        ILogger<BranchProductService> logger)
+    public async Task<BranchProduct> CreateAsync(BranchProduct request, CancellationToken cancellationToken = default)
     {
-        _repository = repository;
-        _productRepository = productRepository;
-        _validator = validator;
-        _logger = logger;
-    }
+        await ValidateBranchProductAsync(request, cancellationToken);
 
-    public async Task<BranchProduct> CreateAsync(BranchProduct request)
-    {
-        await ValidateBranchProductAsync(request);
-
-        var product = await _productRepository.GetByIdAsync(request.ProductId);
-        if (product is null)
-            throw new NotFoundException($"Product with ID {request.ProductId} not found.");
+        var product = await productRepository.GetByIdAsync(request.ProductId, cancellationToken)
+            ?? throw new NotFoundException($"Product with ID {request.ProductId} not found.");
 
         MapProductDetailsToBranchProduct(request, product);
 
-        return await _repository.AddAsync(request);
+        return await repository.AddAsync(request, cancellationToken);
     }
 
-    public async Task DeleteAsync(int id)
+    public async Task DeleteAsync(int id, CancellationToken cancellationToken = default)
     {
         try
         {
-            var branchProduct = await FindBranchProductOrThrowAsync(id);
-            await _repository.DeleteAsync(branchProduct);
+            var branchProduct = await FindBranchProductOrThrowAsync(id, cancellationToken);
+            await repository.DeleteAsync(branchProduct, cancellationToken);
         }
         catch (BaseException)
         {
@@ -67,7 +51,8 @@ public class BranchProductService : IBranchProductService
         DateTimeOffset? endDate = default,
         int page = 1,
         int maxResults = 10,
-        string? orderByClause = default)
+        string? orderByClause = default,
+        CancellationToken cancellationToken = default)
     {
         try
         {
@@ -76,7 +61,7 @@ public class BranchProductService : IBranchProductService
 
             var criteria = BuildCriteria(id, branchId, productId, isActive, startDate, endDate);
 
-            var result = await _repository.GetAsync(page, maxResults, criteria, orderByClause);
+            var result = await repository.GetAsync(page, maxResults, criteria, orderByClause, cancellationToken);
 
             return result;
         }
@@ -90,11 +75,11 @@ public class BranchProductService : IBranchProductService
         }
     }
 
-    public async Task<BranchProduct?> GetByIdAsync(int id)
+    public async Task<BranchProduct?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
     {
         try
         {
-            var branchProduct = await _repository.GetByIdAsync(id);
+            var branchProduct = await repository.GetByIdAsync(id, cancellationToken);
 
             return branchProduct;
         }
@@ -104,25 +89,25 @@ public class BranchProductService : IBranchProductService
         }
     }
 
-    public async Task<BranchProduct> UpdateAsync(int id, BranchProduct request)
+    public async Task<BranchProduct> UpdateAsync(int id, BranchProduct request, CancellationToken cancellationToken = default)
     {
-        var branchProduct = await UpdateBranchProductAsync(id, request);
+        var branchProduct = await UpdateBranchProductAsync(id, request, cancellationToken);
 
-        await ValidateBranchProductAsync(branchProduct);
+        await ValidateBranchProductAsync(branchProduct, cancellationToken);
 
-        return await _repository.UpdateAsync(branchProduct);
+        return await repository.UpdateAsync(branchProduct, cancellationToken);
     }
 
-    private async Task ValidateBranchProductAsync(BranchProduct request)
+    private async Task ValidateBranchProductAsync(BranchProduct request, CancellationToken cancellationToken)
     {
-        var validationResult = await _validator.ValidateAsync(request);
+        var validationResult = await validator.ValidateAsync(request, cancellationToken);
         if (!validationResult.IsValid)
             throw new ValidationException(validationResult.Errors);
     }
 
-    private async Task<BranchProduct> UpdateBranchProductAsync(int id, BranchProduct request)
+    private async Task<BranchProduct> UpdateBranchProductAsync(int id, BranchProduct request, CancellationToken cancellationToken)
     {
-        var existingBranchProduct = await FindBranchProductOrThrowAsync(id);
+        var existingBranchProduct = await FindBranchProductOrThrowAsync(id, cancellationToken);
 
         existingBranchProduct.Price = request.Price;
         existingBranchProduct.StockQuantity = request.StockQuantity;
@@ -131,35 +116,28 @@ public class BranchProductService : IBranchProductService
         return existingBranchProduct;
     }
 
-    private void MapProductDetailsToBranchProduct(BranchProduct branchProduct, Product product)
+    private static void MapProductDetailsToBranchProduct(BranchProduct branchProduct, Product product)
     {
         branchProduct.ProductTitle = product.Title;
         branchProduct.ProductCategory = product.Category;
     }
 
-    private Expression<Func<BranchProduct, bool>> BuildCriteria(
+    private static Expression<Func<BranchProduct, bool>> BuildCriteria(
         int? id,
         int? branchId,
         int? productId,
         bool? isActive,
         DateTimeOffset? startDate,
         DateTimeOffset? endDate)
-    {
-        return b =>
+        => b =>
             (!id.HasValue || b.Id == id.Value) &&
             (!branchId.HasValue || b.BranchId == branchId.Value) &&
             (!productId.HasValue || b.ProductId == productId.Value) &&
             (!isActive.HasValue || b.IsActive == isActive.Value) &&
             (!startDate.HasValue || b.CreatedAt >= startDate.Value) &&
             (!endDate.HasValue || b.CreatedAt <= endDate.Value);
-    }
 
-    private async Task<BranchProduct> FindBranchProductOrThrowAsync(int id)
-    {
-        var branchProduct = await _repository.GetByIdAsync(id);
-        if (branchProduct is null)
-            throw new NotFoundException($"BranchProduct with ID {id} not found.");
-
-        return branchProduct;
-    }
+    private async Task<BranchProduct> FindBranchProductOrThrowAsync(int id, CancellationToken cancellationToken)
+        => await repository.GetByIdAsync(id, cancellationToken)
+            ?? throw new NotFoundException($"BranchProduct with ID {id} not found.");
 }

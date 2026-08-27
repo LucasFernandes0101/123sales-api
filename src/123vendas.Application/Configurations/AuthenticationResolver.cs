@@ -10,7 +10,7 @@ public static class AuthenticationResolver
     public static IServiceCollection AddAuthenticationConfiguration(this IServiceCollection services)
     {
         var secretKey = Environment.GetEnvironmentVariable("JWT_SECRETKEY")
-            ?? throw new ArgumentNullException("SecretKey is missing!");
+            ?? throw new InvalidOperationException("SecretKey is missing!");
 
         services.AddAuthentication(options =>
         {
@@ -19,7 +19,7 @@ public static class AuthenticationResolver
         })
         .AddJwtBearer(options =>
         {
-            options.TokenValidationParameters = new TokenValidationParameters
+            options.TokenValidationParameters = new()
             {
                 ValidateIssuerSigningKey = true,
                 IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(secretKey)),
@@ -28,11 +28,9 @@ public static class AuthenticationResolver
             };
         });
 
-        services.AddAuthorization(options =>
-        {
-            options.AddPolicy("ManagerOnly", policy =>
+        services.AddAuthorizationBuilder()
+            .AddPolicy("ManagerOnly", policy =>
                 policy.RequireRole("Manager"));
-        });
 
         return services;
     }

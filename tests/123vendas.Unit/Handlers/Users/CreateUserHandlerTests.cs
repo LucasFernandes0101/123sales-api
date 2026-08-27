@@ -1,10 +1,10 @@
-﻿using _123vendas.Application.Commands.Users;
+using _123vendas.Application.Commands.Users;
 using _123vendas.Application.Handlers.Users;
 using _123vendas.Domain.Entities;
 using _123vendas.Domain.Exceptions;
 using _123vendas.Domain.Interfaces.Common;
 using _123vendas.Domain.Interfaces.Repositories;
-using _123vendas.Tests.Mocks.Entities;
+using _123vendas.Unit.Mocks.Entities;
 using FluentValidation;
 using FluentValidation.Results;
 using NSubstitute;
@@ -30,7 +30,7 @@ public class CreateUserHandlerTests
 
     [Fact(DisplayName = "Handle_Should_Create_User_Successfully")]
     [Trait("User", "Handler")]
-    public async Task Handle_Should_Create_User_Successfully()
+    public async Task Handle_ShouldCreateUser_WhenValidCommand()
     {
         // Arrange
         var command = new CreateUserCommand
@@ -44,7 +44,7 @@ public class CreateUserHandlerTests
             .Returns(Task.FromResult(new ValidationResult()));
 
         _userRepository.GetActiveByEmailAsync(command.Email)
-            .Returns(Task.FromResult<User>(null));
+            .Returns(Task.FromResult<User?>(null));
 
         var mockedUser = new UserMock().Generate();
         _userRepository.AddAsync(Arg.Any<User>())
@@ -64,7 +64,7 @@ public class CreateUserHandlerTests
 
     [Fact(DisplayName = "Handle_Should_Throw_UserAlreadyExistsException_When_User_Already_Exists")]
     [Trait("User", "Handler")]
-    public async Task Handle_Should_Throw_UserAlreadyExistsException_When_User_Already_Exists()
+    public async Task Handle_ShouldThrowUserAlreadyExistsException_WhenUserAlreadyExists()
     {
         // Arrange
         var command = new CreateUserCommand
@@ -79,7 +79,7 @@ public class CreateUserHandlerTests
 
         var existingUser = new UserMock().Generate();
         _userRepository.GetActiveByEmailAsync(command.Email)
-            .Returns(Task.FromResult(existingUser));
+            .Returns(Task.FromResult<User?>(existingUser));
 
         // Act & Assert
         await Should.ThrowAsync<UserAlreadyExistsException>(async () =>
@@ -90,7 +90,7 @@ public class CreateUserHandlerTests
 
     [Fact(DisplayName = "Handle_Should_Throw_ValidationException_When_Command_Invalid")]
     [Trait("User", "Handler")]
-    public async Task Handle_Should_Throw_ValidationException_When_Command_Invalid()
+    public async Task Handle_ShouldThrowValidationException_WhenCommandInvalid()
     {
         // Arrange
         var command = new CreateUserCommand
@@ -100,9 +100,9 @@ public class CreateUserHandlerTests
             Username = "InvalidUser"
         };
 
-        var failures = new List<ValidationFailure>()
+        var failures = new List<ValidationFailure>
         {
-            new ValidationFailure("Email", "Email is required")
+            new("Email", "Email is required")
         };
 
         var validationResult = new ValidationResult(failures);

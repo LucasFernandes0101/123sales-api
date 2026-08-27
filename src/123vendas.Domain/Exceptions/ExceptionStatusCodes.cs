@@ -5,7 +5,7 @@ namespace _123vendas.Domain.Exceptions;
 
 public static class ExceptionStatusCodes
 {
-    private static Dictionary<Type, HttpStatusCode> exceptionsStatusCodes = new Dictionary<Type, HttpStatusCode>
+    private static Dictionary<Type, HttpStatusCode> exceptionsStatusCodes = new()
         {
             {typeof(ServiceException), HttpStatusCode.InternalServerError},
             {typeof(NotFoundException), HttpStatusCode.NotFound},

@@ -6,9 +6,6 @@ using System.Diagnostics.CodeAnalysis;
 namespace _123vendas.Infrastructure.Repositories;
 
 [ExcludeFromCodeCoverage]
-public class ProductRepository : BaseRepository<Product>, IProductRepository
+public class ProductRepository(PostgreDbContext context) : BaseRepository<Product>(context), IProductRepository
 {
-    public ProductRepository(PostgreDbContext dbContext) : base(dbContext)
-    {
-    }
 }

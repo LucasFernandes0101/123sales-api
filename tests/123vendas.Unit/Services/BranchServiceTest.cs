@@ -1,9 +1,9 @@
-﻿using _123vendas.Application.Services;
+using _123vendas.Application.Services;
 using _123vendas.Domain.Base;
 using _123vendas.Domain.Entities;
 using _123vendas.Domain.Exceptions;
 using _123vendas.Domain.Interfaces.Repositories;
-using _123vendas.Tests.Mocks.Entities;
+using _123vendas.Unit.Mocks.Entities;
 using FluentAssertions;
 using FluentValidation;
 using FluentValidation.Results;
@@ -13,16 +13,16 @@ using NSubstitute.ExceptionExtensions;
 using System.Linq.Expressions;
 using Xunit;
 
-namespace _123vendas.Tests.Services;
+namespace _123vendas.Unit.Services;
 
 [Trait("Branch", "Service")]
 public class BranchServiceTest
 {
     [Fact(DisplayName = "CreateAsync should create a branch successfully")]
-    public async Task CreateAsync_ValidBranch_ShouldReturnCreatedBranch()
+    public async Task CreateAsync_ShouldReturnCreatedBranch_WhenValidBranch()
     {
         // Arrange
-        var (repository, validator, _, service) = CreateDependencies();
+        var (repository, validator, service) = CreateDependencies();
         var branch = new BranchMock().Generate();
 
         validator.ValidateAsync(branch).Returns(new ValidationResult());
@@ -37,17 +37,17 @@ public class BranchServiceTest
     }
 
     [Fact(DisplayName = "CreateAsync should throw ServiceException on repository error")]
-    public async Task CreateAsync_RepositoryError_ShouldThrowServiceException()
+    public async Task CreateAsync_ShouldThrowServiceException_WhenRepositoryError()
     {
         // Arrange
-        var (repository, validator, _, service) = CreateDependencies();
+        var (repository, validator, service) = CreateDependencies();
         var branch = new BranchMock().Generate();
 
         validator.ValidateAsync(branch).Returns(new ValidationResult());
         repository.AddAsync(branch).Throws(new Exception("Repository error"));
 
         // Act
-        Func<Task> act = () => service.CreateAsync(branch);
+        var act = () => service.CreateAsync(branch);
 
         // Assert
         await act.Should().ThrowAsync<ServiceException>()
@@ -55,10 +55,10 @@ public class BranchServiceTest
     }
 
     [Fact(DisplayName = "DeleteAsync should delete a branch successfully")]
-    public async Task DeleteAsync_ValidBranchId_ShouldDeleteBranch()
+    public async Task DeleteAsync_ShouldDeleteBranch_WhenValidBranchId()
     {
         // Arrange
-        var (repository, _, _, service) = CreateDependencies();
+        var (repository, _, service) = CreateDependencies();
         var branch = new BranchMock().Generate();
 
         repository.GetByIdAsync(branch.Id).Returns(branch);
@@ -71,15 +71,15 @@ public class BranchServiceTest
     }
 
     [Fact(DisplayName = "DeleteAsync should throw NotFoundException if branch does not exist")]
-    public async Task DeleteAsync_BranchNotFound_ShouldThrowNotFoundException()
+    public async Task DeleteAsync_ShouldThrowNotFoundException_WhenBranchNotFound()
     {
         // Arrange
-        var (repository, _, _, service) = CreateDependencies();
-        int branchId = 1;
+        var (repository, _, service) = CreateDependencies();
+        var branchId = 1;
         repository.GetByIdAsync(branchId).Returns(default(Branch));
 
         // Act
-        Func<Task> act = () => service.DeleteAsync(branchId);
+        var act = () => service.DeleteAsync(branchId);
 
         // Assert
         await act.Should().ThrowAsync<NotFoundException>()
@@ -87,13 +87,14 @@ public class BranchServiceTest
     }
 
     [Fact(DisplayName = "GetAllAsync should return branches based on criteria")]
-    public async Task GetAllAsync_ValidCriteria_ShouldReturnBranches()
+    public async Task GetAllAsync_ShouldReturnBranches_WhenValidCriteria()
     {
         // Arrange
-        var (repository, _, _, service) = CreateDependencies();
+        var (repository, _, service) = CreateDependencies();
         var branches = new BranchMock().Generate(2);
 
-        repository.GetAsync(1, 10, Arg.Any<Expression<Func<Branch, bool>>>()).Returns(new PagedResult<Branch>(branches.Count(), branches));
+        repository.GetAsync(1, 10, Arg.Any<Expression<Func<Branch, bool>>>())
+            .Returns(new PagedResult<Branch>(branches.Count, branches));
 
         // Act
         var result = await service.GetAllAsync(null, true, null, null, null, 1, 10);
@@ -103,10 +104,10 @@ public class BranchServiceTest
     }
 
     [Fact(DisplayName = "GetByIdAsync should return the branch if exists")]
-    public async Task GetByIdAsync_ExistingId_ShouldReturnBranch()
+    public async Task GetByIdAsync_ShouldReturnBranch_WhenExistingId()
     {
         // Arrange
-        var (repository, _, _, service) = CreateDependencies();
+        var (repository, _, service) = CreateDependencies();
         var branch = new BranchMock().Generate();
         repository.GetByIdAsync(branch.Id).Returns(branch);
 
@@ -118,11 +119,11 @@ public class BranchServiceTest
     }
 
     [Fact(DisplayName = "GetByIdAsync should return null if branch not found")]
-    public async Task GetByIdAsync_BranchNotFound_ShouldReturnNull()
+    public async Task GetByIdAsync_ShouldReturnNull_WhenBranchNotFound()
     {
         // Arrange
-        var (repository, _, _, service) = CreateDependencies();
-        int branchId = 1;
+        var (repository, _, service) = CreateDependencies();
+        var branchId = 1;
         repository.GetByIdAsync(branchId).Returns(default(Branch));
 
         // Act
@@ -133,10 +134,10 @@ public class BranchServiceTest
     }
 
     [Fact(DisplayName = "UpdateAsync should update the branch successfully")]
-    public async Task UpdateAsync_ValidBranch_ShouldUpdateBranch()
+    public async Task UpdateAsync_ShouldUpdateBranch_WhenValidBranch()
     {
         // Arrange
-        var (repository, validator, _, service) = CreateDependencies();
+        var (repository, validator, service) = CreateDependencies();
         var existingBranch = new BranchMock().Generate();
         var updateBranch = new BranchMock().Generate();
 
@@ -153,49 +154,48 @@ public class BranchServiceTest
     }
 
     [Fact(DisplayName = "UpdateAsync should throw ServiceException on validation failure")]
-    public async Task UpdateAsync_InvalidBranch_ShouldThrowServiceException()
+    public async Task UpdateAsync_ShouldThrowServiceException_WhenInvalidBranch()
     {
         // Arrange
-        var (repository, validator, _, service) = CreateDependencies();
+        var (repository, validator, service) = CreateDependencies();
         var existingBranch = new BranchMock().Generate();
         var updateBranch = new BranchMock().Generate();
         repository.GetByIdAsync(existingBranch.Id).Returns(existingBranch);
         var validationResult = new ValidationResult(new List<ValidationFailure>
         {
-            new ValidationFailure("Name", "Name cannot be empty.")
+            new("Name", "Name cannot be empty.")
         });
         validator.ValidateAsync(existingBranch).Returns(validationResult);
 
         // Act
-        Func<Task> act = () => service.UpdateAsync(existingBranch.Id, updateBranch);
+        var act = () => service.UpdateAsync(existingBranch.Id, updateBranch);
 
         // Assert
         await act.Should().ThrowAsync<ValidationException>();
     }
 
     [Fact(DisplayName = "UpdateAsync should throw NotFoundException if branch does not exist")]
-    public async Task UpdateAsync_BranchNotFound_ShouldThrowNotFoundException()
+    public async Task UpdateAsync_ShouldThrowNotFoundException_WhenBranchNotFound()
     {
         // Arrange
-        var (repository, _, _, service) = CreateDependencies();
-        int branchId = 1;
+        var (repository, _, service) = CreateDependencies();
+        var branchId = 1;
         var updateBranch = new Branch { Name = "Updated Branch" };
         repository.GetByIdAsync(branchId).Returns(default(Branch));
 
         // Act
-        Func<Task> act = () => service.UpdateAsync(branchId, updateBranch);
+        var act = () => service.UpdateAsync(branchId, updateBranch);
 
         // Assert
         await act.Should().ThrowAsync<NotFoundException>()
             .WithMessage("Branch with ID 1 not found.");
     }
 
-    private (IBranchRepository repository, IValidator<Branch> validator, ILogger<BranchService> logger, BranchService service) CreateDependencies()
+    private static (IBranchRepository repository, IValidator<Branch> validator, BranchService service) CreateDependencies()
     {
         var repository = Substitute.For<IBranchRepository>();
         var validator = Substitute.For<IValidator<Branch>>();
-        var logger = Substitute.For<ILogger<BranchService>>();
-        var service = new BranchService(repository, validator, logger);
-        return (repository, validator, logger, service);
+        var service = new BranchService(repository, validator);
+        return (repository, validator, service);
     }
 }
