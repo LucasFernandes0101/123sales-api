@@ -16,7 +16,7 @@ public class SeedManager(IEnumerable<IDataSeeder> seeders) : ISeedManager
             await seeder.SeedAsync(cancellationToken);
     }
 
-    private bool IsSeedEnabled()
+    private static bool IsSeedEnabled()
     {
         var value = Environment.GetEnvironmentVariable("SEED_DATABASE_FLAG");
 
