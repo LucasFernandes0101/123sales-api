@@ -1,9 +1,9 @@
-﻿using _123vendas.Application.Services;
+using _123vendas.Application.Services;
 using _123vendas.Domain.Base;
 using _123vendas.Domain.Entities;
 using _123vendas.Domain.Exceptions;
 using _123vendas.Domain.Interfaces.Repositories;
-using _123vendas.Tests.Mocks.Entities;
+using _123vendas.Unit.Mocks.Entities;
 using FluentAssertions;
 using FluentValidation;
 using FluentValidation.Results;
@@ -13,7 +13,7 @@ using NSubstitute.ExceptionExtensions;
 using System.Linq.Expressions;
 using Xunit;
 
-namespace _123vendas.Tests.Services;
+namespace _123vendas.Unit.Services;
 
 [Trait("Branch", "Service")]
 public class BranchServiceTest

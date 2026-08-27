@@ -1,4 +1,4 @@
-﻿using _123vendas.Application.Commands.Auth;
+using _123vendas.Application.Commands.Auth;
 using _123vendas.Application.Handlers.Auth;
 using _123vendas.Domain.Entities;
 using _123vendas.Domain.Enums;

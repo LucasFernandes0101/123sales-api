@@ -1,8 +1,8 @@
-﻿using _123vendas.Domain.Entities;
+using _123vendas.Domain.Entities;
 using _123vendas.Domain.Enums;
 using Bogus;
 
-namespace _123vendas.Tests.Mocks.Entities;
+namespace _123vendas.Unit.Mocks.Entities;
 
 public class ProductMock : Faker<Product>
 {

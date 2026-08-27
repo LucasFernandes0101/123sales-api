@@ -1,9 +1,9 @@
-﻿using _123vendas.Application.Commands.Users;
+using _123vendas.Application.Commands.Users;
 using _123vendas.Application.Handlers.Users;
 using _123vendas.Domain.Entities;
 using _123vendas.Domain.Exceptions;
 using _123vendas.Domain.Interfaces.Repositories;
-using _123vendas.Tests.Mocks.Entities;
+using _123vendas.Unit.Mocks.Entities;
 using FluentValidation;
 using FluentValidation.Results;
 using NSubstitute;

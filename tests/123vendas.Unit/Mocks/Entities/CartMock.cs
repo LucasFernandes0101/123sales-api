@@ -1,4 +1,4 @@
-﻿using _123vendas.Domain.Entities;
+using _123vendas.Domain.Entities;
 using Bogus;
 
 namespace _123vendas.Unit.Mocks.Entities;
