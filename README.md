@@ -221,25 +221,33 @@ A seed system populates initial data (users, branches, products, carts, sales) w
 
 ## Running with Docker
 
-The fastest way to get the project running — one command spins up PostgreSQL, RabbitMQ, and the API with everything pre-configured:
+**Zero config. One command.** The `docker-compose.yml` orchestrates PostgreSQL, RabbitMQ, and the API with health checks, dependency ordering, and database seeding — all pre-configured and ready to go.
 
 ```bash
 docker compose up --build
 ```
 
-That's it. The compose file handles:
-- PostgreSQL 17 with health checks
-- RabbitMQ 4 with management UI
-- API build, dependency ordering, and health checks
-- Database seeding (`SEED_DATABASE_FLAG=true`)
+The API image uses a multi-stage Dockerfile: the SDK builds the project in the first stage, and only the runtime + published binaries make it into the final image (no SDK bloat).
 
-Once running:
+### What happens behind the scenes
 
-| Service | URL |
-|---------|-----|
-| Swagger UI | http://localhost:8080/swagger |
-| Health Check | http://localhost:8080/health |
-| RabbitMQ Management | http://localhost:15672 (guest/guest) |
+1. **PostgreSQL 17** spins up with a `vendas` database and a persistent volume
+2. **RabbitMQ 4** starts with management UI enabled
+3. Both services pass their health checks before the API starts
+4. **API builds** via multi-stage Dockerfile (SDK → runtime-only image)
+5. **Database auto-creates** tables via `EnsureCreated()` and **seeds** initial data (users, branches, products, carts, sales)
+6. API health check kicks in after a 15s grace period
+
+### Accessing the services
+
+| Service | URL | Credentials |
+|---------|-----|-------------|
+| Swagger UI | http://localhost:8080/swagger | — |
+| Health Check | http://localhost:8080/health | — |
+| RabbitMQ Management | http://localhost:15672 | guest / guest |
+| PostgreSQL | localhost:5432 | postgres / postgres |
+
+> All services have `restart: unless-stopped`, so they survive machine reboots.
 
 ## Running Locally
 
