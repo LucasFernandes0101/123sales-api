@@ -120,5 +120,6 @@ public class RabbitMQIntegration : IRabbitMQIntegration, IDisposable
         _persistentConnection?.CloseAsync().GetAwaiter().GetResult();
         _channel?.Dispose();
         _persistentConnection?.Dispose();
+        GC.SuppressFinalize(this);
     }
 }
