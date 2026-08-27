@@ -18,12 +18,12 @@ public class AuthenticateUserHandler(
     {
         await ValidateRequestAsync(request, cancellationToken);
 
-        var user = await userRepository.GetActiveByEmailAsync(request.Email!);
+        var user = await userRepository.GetActiveByEmailAsync(request.Email!, cancellationToken);
 
         if (user is null || !passwordHasher.VerifyPassword(request.Password!, user.Password!))
             throw new UnauthorizedUserException("Email or password is invalid.");
 
-        var token = await jwtTokenGenerator.GenerateTokenAsync(user);
+        var token = await jwtTokenGenerator.GenerateTokenAsync(user, cancellationToken);
 
         return new()
         {

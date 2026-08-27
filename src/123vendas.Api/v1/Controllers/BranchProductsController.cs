@@ -23,7 +23,7 @@ public class BranchProductsController(IBranchProductService branchProductService
     [HttpGet]
     [ProducesResponseType(typeof(PagedResponseDTO<BranchProductGetResponseDTO>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-    public async Task<ActionResult<PagedResponseDTO<BranchProductGetResponseDTO>>> GetAsync([FromQuery] BranchProductGetRequestDTO request)
+    public async Task<ActionResult<PagedResponseDTO<BranchProductGetResponseDTO>>> GetAsync([FromQuery] BranchProductGetRequestDTO request, CancellationToken cancellationToken)
     {
         var pagedResult = await branchProductService.GetAllAsync(
             request.Id,
@@ -34,7 +34,8 @@ public class BranchProductsController(IBranchProductService branchProductService
             request.EndDate,
             request.Page,
             request.Size,
-            request.OrderByClause);
+            request.OrderByClause,
+            cancellationToken);
 
         if (pagedResult?.Items is not null && pagedResult.Items.Count > 0)
             return Ok(new PagedResponseDTO<BranchProductGetResponseDTO>(pagedResult.Items.ToDTO(), pagedResult.Total, request.Page, request.Size));
@@ -50,9 +51,9 @@ public class BranchProductsController(IBranchProductService branchProductService
     [HttpGet("{id}")]
     [ProducesResponseType(typeof(BranchProductGetDetailResponseDTO), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<BranchProductGetDetailResponseDTO>> GetAsync([FromRoute] int id)
+    public async Task<ActionResult<BranchProductGetDetailResponseDTO>> GetAsync([FromRoute] int id, CancellationToken cancellationToken)
     {
-        var branchProduct = await branchProductService.GetByIdAsync(id);
+        var branchProduct = await branchProductService.GetByIdAsync(id, cancellationToken);
 
         if (branchProduct is null)
             return NotFound();
@@ -71,9 +72,9 @@ public class BranchProductsController(IBranchProductService branchProductService
     [HttpPost]
     [ProducesResponseType(typeof(BranchProductPostResponseDTO), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ErrorResponseDTO), StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<BranchProductPostResponseDTO>> PostAsync([FromBody] BranchProductPostRequestDTO request)
+    public async Task<ActionResult<BranchProductPostResponseDTO>> PostAsync([FromBody] BranchProductPostRequestDTO request, CancellationToken cancellationToken)
     {
-        var createdBranchProduct = await branchProductService.CreateAsync(request.ToEntity());
+        var createdBranchProduct = await branchProductService.CreateAsync(request.ToEntity(), cancellationToken);
 
         var response = createdBranchProduct.ToPostResponseDTO();
 
@@ -91,9 +92,9 @@ public class BranchProductsController(IBranchProductService branchProductService
     [ProducesResponseType(typeof(BranchProductPutResponseDTO), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponseDTO), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<BranchProductPutResponseDTO>> PutAsync([FromRoute] int id, [FromBody] BranchProductPutRequestDTO request)
+    public async Task<ActionResult<BranchProductPutResponseDTO>> PutAsync([FromRoute] int id, [FromBody] BranchProductPutRequestDTO request, CancellationToken cancellationToken)
     {
-        var branchProduct = await branchProductService.UpdateAsync(id, request.ToEntity());
+        var branchProduct = await branchProductService.UpdateAsync(id, request.ToEntity(), cancellationToken);
 
         return Ok(branchProduct.ToPutResponseDTO());
     }
@@ -107,9 +108,9 @@ public class BranchProductsController(IBranchProductService branchProductService
     [HttpDelete("{id}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> DeleteAsync(int id)
+    public async Task<IActionResult> DeleteAsync(int id, CancellationToken cancellationToken)
     {
-        await branchProductService.DeleteAsync(id);
+        await branchProductService.DeleteAsync(id, cancellationToken);
 
         return NoContent();
     }

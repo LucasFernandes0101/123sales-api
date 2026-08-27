@@ -24,11 +24,11 @@ public class UsersController(IMediator mediator) : ControllerBase
     [ProducesResponseType(typeof(UserPostResponseDTO), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ErrorResponseDTO), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponseDTO), StatusCodes.Status409Conflict)]
-    public async Task<ActionResult<UserPostResponseDTO>> PostAsync([FromBody] UserPostRequestDTO dto)
+    public async Task<ActionResult<UserPostResponseDTO>> PostAsync([FromBody] UserPostRequestDTO dto, CancellationToken cancellationToken)
     {
         var command = dto.ToCommand();
 
-        var result = await mediator.Send(command);
+        var result = await mediator.Send(command, cancellationToken);
 
         var response = result?.ToPostResponse();
 
@@ -43,11 +43,11 @@ public class UsersController(IMediator mediator) : ControllerBase
     [HttpGet("{id}")]
     [ProducesResponseType(typeof(UserGetResponseDTO), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponseDTO), StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<UserGetResponseDTO>> GetByIdAsync(int id)
+    public async Task<ActionResult<UserGetResponseDTO>> GetByIdAsync(int id, CancellationToken cancellationToken)
     {
         var command = new GetUserCommand(id);
 
-        var result = await mediator.Send(command);
+        var result = await mediator.Send(command, cancellationToken);
 
         if (result is null)
             return NotFound();
@@ -67,11 +67,11 @@ public class UsersController(IMediator mediator) : ControllerBase
     [HttpDelete("{id}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponseDTO), StatusCodes.Status404NotFound)]
-    public async Task<ActionResult> DeleteByIdAsync(int id)
+    public async Task<ActionResult> DeleteByIdAsync(int id, CancellationToken cancellationToken)
     {
         var command = new DeleteUserCommand(id);
 
-        await mediator.Send(command);
+        await mediator.Send(command, cancellationToken);
 
         return NoContent();
     }

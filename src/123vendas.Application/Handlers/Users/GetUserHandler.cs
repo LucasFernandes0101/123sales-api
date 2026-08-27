@@ -16,7 +16,7 @@ public class GetUserHandler(
     {
         await ValidateRequestAsync(request, cancellationToken);
 
-        var user = await userRepository.GetByIdAsync(request.Id);
+        var user = await userRepository.GetByIdAsync(request.Id, cancellationToken);
 
         return user?.ToGetResult();
     }

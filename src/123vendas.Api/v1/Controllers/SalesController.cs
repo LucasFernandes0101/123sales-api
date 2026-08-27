@@ -23,7 +23,7 @@ public class SalesController(ISaleService saleService) : ControllerBase
     [HttpGet]
     [ProducesResponseType(typeof(PagedResponseDTO<SaleGetResponseDTO>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-    public async Task<ActionResult<PagedResponseDTO<SaleGetResponseDTO>>> GetAsync([FromQuery] SaleGetRequestDTO request)
+    public async Task<ActionResult<PagedResponseDTO<SaleGetResponseDTO>>> GetAsync([FromQuery] SaleGetRequestDTO request, CancellationToken cancellationToken)
     {
         var pagedResult = await saleService.GetAllAsync(
             request.Id,
@@ -34,7 +34,8 @@ public class SalesController(ISaleService saleService) : ControllerBase
             request.EndDate,
             request.Page,
             request.Size,
-            request.OrderByClause);
+            request.OrderByClause,
+            cancellationToken);
 
         if (pagedResult?.Items is not null && pagedResult.Items.Count > 0)
             return Ok(new PagedResponseDTO<SaleGetResponseDTO>(pagedResult.Items.ToDTO(), pagedResult.Total, request.Page, request.Size));
@@ -50,9 +51,9 @@ public class SalesController(ISaleService saleService) : ControllerBase
     [HttpGet("{id}")]
     [ProducesResponseType(typeof(SaleGetDetailResponseDTO), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<SaleGetDetailResponseDTO>> GetAsync([FromRoute] int id)
+    public async Task<ActionResult<SaleGetDetailResponseDTO>> GetAsync([FromRoute] int id, CancellationToken cancellationToken)
     {
-        var sale = await saleService.GetByIdAsync(id);
+        var sale = await saleService.GetByIdAsync(id, cancellationToken);
 
         if (sale is null)
             return NotFound();
@@ -71,9 +72,9 @@ public class SalesController(ISaleService saleService) : ControllerBase
     [HttpPost]
     [ProducesResponseType(typeof(SalePostResponseDTO), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ErrorResponseDTO), StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<SalePostResponseDTO>> PostAsync([FromBody] SalePostRequestDTO request)
+    public async Task<ActionResult<SalePostResponseDTO>> PostAsync([FromBody] SalePostRequestDTO request, CancellationToken cancellationToken)
     {
-        var createdSale = await saleService.CreateAsync(request.ToEntity());
+        var createdSale = await saleService.CreateAsync(request.ToEntity(), cancellationToken);
 
         var response = createdSale.ToPostResponseDTO();
 
@@ -90,9 +91,9 @@ public class SalesController(ISaleService saleService) : ControllerBase
     [HttpPut("{id}")]
     [ProducesResponseType(typeof(SalePutResponseDTO), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<SalePutResponseDTO>> PutAsync([FromRoute] int id, [FromBody] SalePutRequestDTO request)
+    public async Task<ActionResult<SalePutResponseDTO>> PutAsync([FromRoute] int id, [FromBody] SalePutRequestDTO request, CancellationToken cancellationToken)
     {
-        var sale = await saleService.UpdateAsync(id, request.ToEntity());
+        var sale = await saleService.UpdateAsync(id, request.ToEntity(), cancellationToken);
 
         return Ok(sale.ToPutResponseDTO());
     }
@@ -106,9 +107,9 @@ public class SalesController(ISaleService saleService) : ControllerBase
     [HttpDelete("{id}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> DeleteAsync(int id)
+    public async Task<IActionResult> DeleteAsync(int id, CancellationToken cancellationToken)
     {
-        await saleService.DeleteAsync(id);
+        await saleService.DeleteAsync(id, cancellationToken);
 
         return NoContent();
     }
@@ -120,9 +121,9 @@ public class SalesController(ISaleService saleService) : ControllerBase
     /// <returns>No content response if the cancellation is successful.</returns>
     [HttpPut("{id}/cancel")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-    public async Task<IActionResult> CancelAsync([FromRoute] int id)
+    public async Task<IActionResult> CancelAsync([FromRoute] int id, CancellationToken cancellationToken)
     {
-        await saleService.CancelAsync(id);
+        await saleService.CancelAsync(id, cancellationToken);
 
         return NoContent();
     }
@@ -135,9 +136,9 @@ public class SalesController(ISaleService saleService) : ControllerBase
     /// <returns>The details of the sale after the item cancellation.</returns>
     [HttpPut("{id}/Items/{sequence}/cancel")]
     [ProducesResponseType(typeof(SaleGetDetailResponseDTO), StatusCodes.Status200OK)]
-    public async Task<ActionResult<SaleGetDetailResponseDTO>> CancelItemAsync([FromRoute] int id, [FromRoute] int sequence)
+    public async Task<ActionResult<SaleGetDetailResponseDTO>> CancelItemAsync([FromRoute] int id, [FromRoute] int sequence, CancellationToken cancellationToken)
     {
-        var sale = await saleService.CancelItemAsync(id, sequence);
+        var sale = await saleService.CancelItemAsync(id, sequence, cancellationToken);
 
         return Ok(sale.ToDetailDTO());
     }
@@ -150,9 +151,9 @@ public class SalesController(ISaleService saleService) : ControllerBase
     /// <returns>The details of the specified item.</returns>
     [HttpGet("{id}/Items/{sequence}")]
     [ProducesResponseType(typeof(SaleItemGetDetailDTO), StatusCodes.Status200OK)]
-    public async Task<ActionResult<SaleItemGetDetailDTO>> GetItemAsync([FromRoute] int id, [FromRoute] int sequence)
+    public async Task<ActionResult<SaleItemGetDetailDTO>> GetItemAsync([FromRoute] int id, [FromRoute] int sequence, CancellationToken cancellationToken)
     {
-        var saleItem = await saleService.GetItemAsync(id, sequence);
+        var saleItem = await saleService.GetItemAsync(id, sequence, cancellationToken);
 
         return Ok(saleItem.ToDetailDTO());
     }

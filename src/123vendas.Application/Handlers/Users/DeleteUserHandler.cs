@@ -14,10 +14,10 @@ public class DeleteUserHandler(
     {
         await ValidateRequestAsync(request, cancellationToken);
 
-        var user = await userRepository.GetByIdAsync(request.Id)
+        var user = await userRepository.GetByIdAsync(request.Id, cancellationToken)
             ?? throw new EntityNotFoundException($"User with ID {request.Id} not found");
 
-        await userRepository.DeleteAsync(user);
+        await userRepository.DeleteAsync(user, cancellationToken);
     }
 
     private async Task ValidateRequestAsync(DeleteUserCommand request, CancellationToken cancellationToken)

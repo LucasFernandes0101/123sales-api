@@ -9,7 +9,7 @@ namespace _123vendas.Infrastructure.Repositories;
 [ExcludeFromCodeCoverage]
 public class CartRepository(PostgreDbContext context) : BaseRepository<Cart>(context), ICartRepository
 {
-    public async Task<Cart?> GetWithProductsByIdAsync(int id)
+    public async Task<Cart?> GetWithProductsByIdAsync(int id, CancellationToken cancellationToken = default)
         => await _dbContext.Carts.Include(s => s.Products)
-                                 .FirstOrDefaultAsync(s => s.Id == id);
+                                 .FirstOrDefaultAsync(s => s.Id == id, cancellationToken);
 }

@@ -23,7 +23,7 @@ public class CartsController(ICartService cartService) : ControllerBase
     [ProducesResponseType(typeof(PagedResponseDTO<CartGetResponseDTO>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponseDTO), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponseDTO), StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<PagedResponseDTO<CartGetResponseDTO>>> GetAsync([FromQuery] CartGetRequestDTO request)
+    public async Task<ActionResult<PagedResponseDTO<CartGetResponseDTO>>> GetAsync([FromQuery] CartGetRequestDTO request, CancellationToken cancellationToken)
     {
         var pagedResult = await cartService.GetAllAsync(
             request.Id,
@@ -32,7 +32,8 @@ public class CartsController(ICartService cartService) : ControllerBase
             request.MaxDate,
             request.Page,
             request.Size,
-            request.OrderByClause);
+            request.OrderByClause,
+            cancellationToken);
 
         if (pagedResult?.Items is not null && pagedResult.Items.Count > 0)
             return Ok(new PagedResponseDTO<CartGetResponseDTO>(pagedResult.Items.ToDTO(), pagedResult.Total, request.Page, request.Size));
@@ -48,9 +49,9 @@ public class CartsController(ICartService cartService) : ControllerBase
     [HttpGet("{id}")]
     [ProducesResponseType(typeof(CartGetDetailResponseDTO), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponseDTO), StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<CartGetDetailResponseDTO>> GetAsync([FromRoute] int id)
+    public async Task<ActionResult<CartGetDetailResponseDTO>> GetAsync([FromRoute] int id, CancellationToken cancellationToken)
     {
-        var cart = await cartService.GetByIdAsync(id);
+        var cart = await cartService.GetByIdAsync(id, cancellationToken);
 
         if (cart is null)
             return NotFound();
@@ -68,9 +69,9 @@ public class CartsController(ICartService cartService) : ControllerBase
     [HttpPost]
     [ProducesResponseType(typeof(CartPostResponseDTO), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ErrorResponseDTO), StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<CartPostResponseDTO>> PostAsync([FromBody] CartPostRequestDTO request)
+    public async Task<ActionResult<CartPostResponseDTO>> PostAsync([FromBody] CartPostRequestDTO request, CancellationToken cancellationToken)
     {
-        var createdCart = await cartService.CreateAsync(request.ToEntity());
+        var createdCart = await cartService.CreateAsync(request.ToEntity(), cancellationToken);
 
         var response = createdCart.ToPostResponseDTO();
 
@@ -87,9 +88,9 @@ public class CartsController(ICartService cartService) : ControllerBase
     [ProducesResponseType(typeof(CartPutResponseDTO), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponseDTO), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponseDTO), StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<CartPutResponseDTO>> PutAsync([FromRoute] int id, [FromBody] CartPutRequestDTO request)
+    public async Task<ActionResult<CartPutResponseDTO>> PutAsync([FromRoute] int id, [FromBody] CartPutRequestDTO request, CancellationToken cancellationToken)
     {
-        var cart = await cartService.UpdateAsync(id, request.ToEntity());
+        var cart = await cartService.UpdateAsync(id, request.ToEntity(), cancellationToken);
 
         return Ok(cart.ToPutResponseDTO());
     }
@@ -102,9 +103,9 @@ public class CartsController(ICartService cartService) : ControllerBase
     [HttpDelete("{id}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponseDTO), StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> DeleteAsync(int id)
+    public async Task<IActionResult> DeleteAsync(int id, CancellationToken cancellationToken)
     {
-        await cartService.DeleteAsync(id);
+        await cartService.DeleteAsync(id, cancellationToken);
 
         return NoContent();
     }

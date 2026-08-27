@@ -12,13 +12,13 @@ public class BranchService(
     IBranchRepository repository,
     IValidator<Branch> validator) : IBranchService
 {
-    public async Task<Branch> CreateAsync(Branch request)
+    public async Task<Branch> CreateAsync(Branch request, CancellationToken cancellationToken = default)
     {
         try
         {
-            await ValidateBranchAsync(request);
+            await ValidateBranchAsync(request, cancellationToken);
 
-            return await repository.AddAsync(request);
+            return await repository.AddAsync(request, cancellationToken);
         }
         catch (Exception ex) when (ex is not ValidationException)
         {
@@ -26,13 +26,13 @@ public class BranchService(
         }
     }
 
-    public async Task DeleteAsync(int id)
+    public async Task DeleteAsync(int id, CancellationToken cancellationToken = default)
     {
         try
         {
-            var branch = await FindBranchOrThrowAsync(id);
+            var branch = await FindBranchOrThrowAsync(id, cancellationToken);
 
-            await repository.DeleteAsync(branch);
+            await repository.DeleteAsync(branch, cancellationToken);
         }
         catch (BaseException)
         {
@@ -52,7 +52,8 @@ public class BranchService(
         DateTimeOffset? endDate = default,
         int page = 1,
         int maxResults = 10,
-        string? orderByClause = default)
+        string? orderByClause = default,
+        CancellationToken cancellationToken = default)
     {
         try
         {
@@ -61,7 +62,7 @@ public class BranchService(
 
             var criteria = BuildCriteria(id, isActive, name, startDate, endDate);
 
-            var result = await repository.GetAsync(page, maxResults, criteria, orderByClause);
+            var result = await repository.GetAsync(page, maxResults, criteria, orderByClause, cancellationToken);
 
             return result;
         }
@@ -75,11 +76,11 @@ public class BranchService(
         }
     }
 
-    public async Task<Branch?> GetByIdAsync(int id)
+    public async Task<Branch?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
     {
         try
         {
-            var branch = await repository.GetByIdAsync(id);
+            var branch = await repository.GetByIdAsync(id, cancellationToken);
 
             return branch;
         }
@@ -89,15 +90,15 @@ public class BranchService(
         }
     }
 
-    public async Task<Branch> UpdateAsync(int id, Branch request)
+    public async Task<Branch> UpdateAsync(int id, Branch request, CancellationToken cancellationToken = default)
     {
         try
         {
-            var branch = await UpdateBranchAsync(id, request);
+            var branch = await UpdateBranchAsync(id, request, cancellationToken);
 
-            await ValidateBranchAsync(branch);
+            await ValidateBranchAsync(branch, cancellationToken);
 
-            return await repository.UpdateAsync(branch);
+            return await repository.UpdateAsync(branch, cancellationToken);
         }
         catch (Exception ex) when (ex is ValidationException || ex is BaseException)
         {
@@ -109,9 +110,9 @@ public class BranchService(
         }
     }
 
-    private async Task<Branch> UpdateBranchAsync(int id, Branch request)
+    private async Task<Branch> UpdateBranchAsync(int id, Branch request, CancellationToken cancellationToken)
     {
-        var existingBranch = await FindBranchOrThrowAsync(id);
+        var existingBranch = await FindBranchOrThrowAsync(id, cancellationToken);
 
         existingBranch.Name = request.Name;
         existingBranch.Address = request.Address;
@@ -134,13 +135,13 @@ public class BranchService(
             (!startDate.HasValue || b.CreatedAt >= startDate.Value) &&
             (!endDate.HasValue || b.CreatedAt <= endDate.Value);
 
-    private async Task<Branch> FindBranchOrThrowAsync(int id)
-        => await repository.GetByIdAsync(id)
+    private async Task<Branch> FindBranchOrThrowAsync(int id, CancellationToken cancellationToken)
+        => await repository.GetByIdAsync(id, cancellationToken)
             ?? throw new NotFoundException($"Branch with ID {id} not found.");
 
-    private async Task ValidateBranchAsync(Branch branch)
+    private async Task ValidateBranchAsync(Branch branch, CancellationToken cancellationToken)
     {
-        var validationResult = await validator.ValidateAsync(branch);
+        var validationResult = await validator.ValidateAsync(branch, cancellationToken);
 
         if (!validationResult.IsValid)
             throw new ValidationException(validationResult.Errors);

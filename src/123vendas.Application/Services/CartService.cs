@@ -12,13 +12,13 @@ public class CartService(
     ICartRepository repository,
     IValidator<Cart> validator) : ICartService
 {
-    public async Task<Cart> CreateAsync(Cart request)
+    public async Task<Cart> CreateAsync(Cart request, CancellationToken cancellationToken = default)
     {
         try
         {
-            await ValidateCartAsync(request);
+            await ValidateCartAsync(request, cancellationToken);
 
-            return await repository.AddAsync(request);
+            return await repository.AddAsync(request, cancellationToken);
         }
         catch (Exception ex) when (ex is not ValidationException)
         {
@@ -26,13 +26,13 @@ public class CartService(
         }
     }
 
-    public async Task DeleteAsync(int id)
+    public async Task DeleteAsync(int id, CancellationToken cancellationToken = default)
     {
         try
         {
-            var cart = await FindCartOrThrowAsync(id);
+            var cart = await FindCartOrThrowAsync(id, cancellationToken);
 
-            await repository.DeleteAsync(cart);
+            await repository.DeleteAsync(cart, cancellationToken);
         }
         catch (BaseException)
         {
@@ -51,7 +51,8 @@ public class CartService(
         DateTimeOffset? maxDate = default,
         int page = 1,
         int maxResults = 10,
-        string? orderByClause = default)
+        string? orderByClause = default,
+        CancellationToken cancellationToken = default)
     {
         try
         {
@@ -60,7 +61,7 @@ public class CartService(
 
             var criteria = BuildCriteria(id, userId, minDate, maxDate);
 
-            var result = await repository.GetAsync(page, maxResults, criteria, orderByClause);
+            var result = await repository.GetAsync(page, maxResults, criteria, orderByClause, cancellationToken);
 
             return result;
         }
@@ -74,11 +75,11 @@ public class CartService(
         }
     }
 
-    public async Task<Cart?> GetByIdAsync(int id)
+    public async Task<Cart?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
     {
         try
         {
-            var cart = await repository.GetWithProductsByIdAsync(id);
+            var cart = await repository.GetWithProductsByIdAsync(id, cancellationToken);
 
             return cart;
         }
@@ -88,15 +89,15 @@ public class CartService(
         }
     }
 
-    public async Task<Cart> UpdateAsync(int id, Cart request)
+    public async Task<Cart> UpdateAsync(int id, Cart request, CancellationToken cancellationToken = default)
     {
         try
         {
-            var cart = await UpdateCartAsync(id, request);
+            var cart = await UpdateCartAsync(id, request, cancellationToken);
 
-            await ValidateCartAsync(cart);
+            await ValidateCartAsync(cart, cancellationToken);
 
-            return await repository.UpdateAsync(cart);
+            return await repository.UpdateAsync(cart, cancellationToken);
         }
         catch (Exception ex) when (ex is ValidationException || ex is BaseException)
         {
@@ -108,9 +109,9 @@ public class CartService(
         }
     }
 
-    private async Task<Cart> UpdateCartAsync(int id, Cart request)
+    private async Task<Cart> UpdateCartAsync(int id, Cart request, CancellationToken cancellationToken)
     {
-        var existingCart = await FindCartWithProductsOrThrowAsync(id);
+        var existingCart = await FindCartWithProductsOrThrowAsync(id, cancellationToken);
 
         UpdateCartProperties(existingCart, request);
 
@@ -177,17 +178,17 @@ public class CartService(
             (!minDate.HasValue || b.Date >= minDate.Value) &&
             (!maxDate.HasValue || b.Date <= maxDate.Value);
 
-    private async Task<Cart> FindCartOrThrowAsync(int id)
-        => await repository.GetByIdAsync(id)
+    private async Task<Cart> FindCartOrThrowAsync(int id, CancellationToken cancellationToken)
+        => await repository.GetByIdAsync(id, cancellationToken)
             ?? throw new NotFoundException($"Cart with ID {id} not found.");
 
-    private async Task<Cart> FindCartWithProductsOrThrowAsync(int id)
-        => await repository.GetWithProductsByIdAsync(id)
+    private async Task<Cart> FindCartWithProductsOrThrowAsync(int id, CancellationToken cancellationToken)
+        => await repository.GetWithProductsByIdAsync(id, cancellationToken)
             ?? throw new NotFoundException($"Cart with ID {id} not found.");
 
-    private async Task ValidateCartAsync(Cart cart)
+    private async Task ValidateCartAsync(Cart cart, CancellationToken cancellationToken)
     {
-        var validationResult = await validator.ValidateAsync(cart);
+        var validationResult = await validator.ValidateAsync(cart, cancellationToken);
 
         if (!validationResult.IsValid)
             throw new ValidationException(validationResult.Errors);

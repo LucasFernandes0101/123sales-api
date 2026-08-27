@@ -6,5 +6,5 @@ namespace _123vendas.Domain.Interfaces.Repositories;
 
 public interface IBranchProductRepository : IBaseRepository<BranchProduct>
 {
-    Task UpdateByProductIdAsync(int productId, string productName, ProductCategory productCategory);
+    Task UpdateByProductIdAsync(int productId, string productName, ProductCategory productCategory, CancellationToken cancellationToken = default);
 }

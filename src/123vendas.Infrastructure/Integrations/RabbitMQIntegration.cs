@@ -27,12 +27,12 @@ public class RabbitMQIntegration : IRabbitMQIntegration, IDisposable
         };
     }
 
-    public async Task PublishMessageAsync(BaseEvent @event)
+    public async Task PublishMessageAsync(BaseEvent @event, CancellationToken cancellationToken = default)
     {
         await EnsureConnectedAsync();
 
         string exchangeName = $"ex_{@event.Domain.ToLower()}";
-        await _channel!.ExchangeDeclareAsync(exchangeName, ExchangeType.Direct, durable: true);
+        await _channel!.ExchangeDeclareAsync(exchangeName, ExchangeType.Direct, durable: true, cancellationToken: cancellationToken);
 
         string routingKey = @event.GetType().Name;
         string message = JsonConvert.SerializeObject(@event);
@@ -49,7 +49,8 @@ public class RabbitMQIntegration : IRabbitMQIntegration, IDisposable
                     routingKey: routingKey,
                     mandatory: true,
                     basicProperties: basicProperties,
-                    body: body
+                    body: body,
+                    cancellationToken: cancellationToken
                 );
                 return;
             }

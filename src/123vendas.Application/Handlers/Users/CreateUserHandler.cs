@@ -18,7 +18,7 @@ public class CreateUserHandler(
     {
         await ValidateUserAsync(command, cancellationToken);
 
-        var result = await userRepository.GetActiveByEmailAsync(command.Email!);
+        var result = await userRepository.GetActiveByEmailAsync(command.Email!, cancellationToken);
 
         if (result is not null)
             throw new UserAlreadyExistsException($"User with email {command.Email} already exists");
@@ -27,7 +27,7 @@ public class CreateUserHandler(
 
         user.Password = passwordHasher.HashPassword(command.Password!);
 
-        var createdUser = await userRepository.AddAsync(user);
+        var createdUser = await userRepository.AddAsync(user, cancellationToken);
 
         return createdUser.ToCreateResult();
     }

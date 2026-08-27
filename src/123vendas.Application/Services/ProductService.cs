@@ -14,15 +14,15 @@ public class ProductService(
     IBranchProductRepository branchProductRepository,
     IValidator<Product> validator) : IProductService
 {
-    public async Task<Product> CreateAsync(Product request)
+    public async Task<Product> CreateAsync(Product request, CancellationToken cancellationToken = default)
     {
         try
         {
             request.Rating ??= new();
 
-            await ValidateProductAsync(request);
+            await ValidateProductAsync(request, cancellationToken);
 
-            return await repository.AddAsync(request);
+            return await repository.AddAsync(request, cancellationToken);
         }
         catch (Exception ex) when (ex is ValidationException || ex is BaseException)
         {
@@ -38,13 +38,13 @@ public class ProductService(
         => Enum.GetValues<ProductCategory>()
             .Select(c => c.ToString());
 
-    public async Task DeleteAsync(int id)
+    public async Task DeleteAsync(int id, CancellationToken cancellationToken = default)
     {
         try
         {
-            var product = await FindProductOrThrowAsync(id);
+            var product = await FindProductOrThrowAsync(id, cancellationToken);
 
-            await repository.DeleteAsync(product);
+            await repository.DeleteAsync(product, cancellationToken);
         }
         catch (BaseException)
         {
@@ -67,7 +67,8 @@ public class ProductService(
         DateTimeOffset? endDate = default,
         int page = 1,
         int maxResults = 10,
-        string? orderByClause = default)
+        string? orderByClause = default,
+        CancellationToken cancellationToken = default)
     {
         try
         {
@@ -76,7 +77,7 @@ public class ProductService(
 
             var criteria = BuildCriteria(id, isActive, title, category, minPrice, maxPrice, startDate, endDate);
 
-            var result = await repository.GetAsync(page, maxResults, criteria, orderByClause);
+            var result = await repository.GetAsync(page, maxResults, criteria, orderByClause, cancellationToken);
 
             return result;
         }
@@ -90,11 +91,11 @@ public class ProductService(
         }
     }
 
-    public async Task<Product?> GetByIdAsync(int id)
+    public async Task<Product?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
     {
         try
         {
-            var product = await repository.GetByIdAsync(id);
+            var product = await repository.GetByIdAsync(id, cancellationToken);
 
             return product;
         }
@@ -104,23 +105,23 @@ public class ProductService(
         }
     }
 
-    public async Task<Product> UpdateAsync(int id, Product request)
+    public async Task<Product> UpdateAsync(int id, Product request, CancellationToken cancellationToken = default)
     {
         try
         {
-            var existingProduct = await FindProductOrThrowAsync(id);
+            var existingProduct = await FindProductOrThrowAsync(id, cancellationToken);
 
             var oldTitle = existingProduct.Title!;
             var oldCategory = existingProduct.Category;
 
             var product = await UpdateProductAsync(existingProduct, request);
 
-            await ValidateProductAsync(product);
+            await ValidateProductAsync(product, cancellationToken);
 
-            await repository.UpdateAsync(product);
+            await repository.UpdateAsync(product, cancellationToken);
 
             if (!oldTitle.Equals(product.Title) || oldCategory != product.Category)
-                await branchProductRepository.UpdateByProductIdAsync(product.Id, product.Title!, product.Category);
+                await branchProductRepository.UpdateByProductIdAsync(product.Id, product.Title!, product.Category, cancellationToken);
 
             return product;
         }
@@ -180,13 +181,13 @@ public class ProductService(
             (!endDate.HasValue || b.CreatedAt <= endDate.Value);
     }
 
-    private async Task<Product> FindProductOrThrowAsync(int id)
-        => await repository.GetByIdAsync(id)
+    private async Task<Product> FindProductOrThrowAsync(int id, CancellationToken cancellationToken)
+        => await repository.GetByIdAsync(id, cancellationToken)
             ?? throw new NotFoundException($"Product with ID {id} not found.");
 
-    private async Task ValidateProductAsync(Product request)
+    private async Task ValidateProductAsync(Product request, CancellationToken cancellationToken)
     {
-        var validationResult = await validator.ValidateAsync(request);
+        var validationResult = await validator.ValidateAsync(request, cancellationToken);
 
         if (!validationResult.IsValid)
             throw new ValidationException(validationResult.Errors);

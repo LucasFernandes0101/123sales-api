@@ -11,7 +11,7 @@ namespace _123vendas.Application.Common.Security;
 
 public class JwtTokenGenerator : IJwtTokenGenerator
 {
-    public async Task<string> GenerateTokenAsync(User user)
+    public async Task<string> GenerateTokenAsync(User user, CancellationToken cancellationToken = default)
     {
         var secretKey = Environment.GetEnvironmentVariable("JWT_SECRETKEY")
                             ?? throw new InvalidOperationException("SecretKey is missing!");

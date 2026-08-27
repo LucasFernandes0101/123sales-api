@@ -4,5 +4,5 @@ namespace _123vendas.Domain.Interfaces.Integrations;
 
 public interface IRabbitMQIntegration
 {
-    public Task PublishMessageAsync(BaseEvent @event);
+    public Task PublishMessageAsync(BaseEvent @event, CancellationToken cancellationToken = default);
 }

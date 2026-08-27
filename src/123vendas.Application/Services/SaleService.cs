@@ -21,7 +21,7 @@ public class SaleService(
 {
     private const int MAX_ITEMS_PER_SALE = 20;
 
-    public async Task<Sale> CreateAsync(Sale request)
+    public async Task<Sale> CreateAsync(Sale request, CancellationToken cancellationToken = default)
     {
         try
         {
@@ -34,15 +34,15 @@ public class SaleService(
                 Items = []
             };
 
-            await ProcessItemsAsync(sale, request.Items!);
+            await ProcessItemsAsync(sale, request.Items!, cancellationToken);
 
-            await ValidateSaleAsync(sale);
+            await ValidateSaleAsync(sale, cancellationToken);
 
-            var savedSale = await repository.AddAsync(sale);
+            var savedSale = await repository.AddAsync(sale, cancellationToken);
 
-            await UpdateStockQuantitiesAsync(savedSale.Items!, savedSale.BranchId);
+            await UpdateStockQuantitiesAsync(savedSale.Items!, savedSale.BranchId, cancellationToken);
 
-            await PublishSaleMessageAsync(new SaleCreatedEvent(savedSale));
+            await PublishSaleMessageAsync(new SaleCreatedEvent(savedSale), cancellationToken);
 
             return savedSale;
         }
@@ -56,11 +56,11 @@ public class SaleService(
         }
     }
 
-    public async Task<Sale> CancelItemAsync(int saleId, int sequence)
+    public async Task<Sale> CancelItemAsync(int saleId, int sequence, CancellationToken cancellationToken = default)
     {
         try
         {
-            var sale = await GetSaleWithItemsOrThrowAsync(saleId);
+            var sale = await GetSaleWithItemsOrThrowAsync(saleId, cancellationToken);
 
             if (sale.Status == SaleStatus.Canceled)
                 throw new SaleAlreadyCanceledException($"Cannot cancel an item from a sale that is already canceled.");
@@ -75,9 +75,9 @@ public class SaleService(
 
             sale!.TotalAmount = CalculateTotalAmount(sale.Items!);
 
-            await repository.UpdateAsync(sale);
+            await repository.UpdateAsync(sale, cancellationToken);
 
-            await PublishSaleMessageAsync(new SaleItemCancelledEvent(saleItem));
+            await PublishSaleMessageAsync(new SaleItemCancelledEvent(saleItem), cancellationToken);
 
             return sale;
         }
@@ -91,11 +91,11 @@ public class SaleService(
         }
     }
 
-    public async Task<SaleItem> GetItemAsync(int saleId, int sequence)
+    public async Task<SaleItem> GetItemAsync(int saleId, int sequence, CancellationToken cancellationToken = default)
     {
         try
         {
-            var sale = await GetSaleWithItemsOrThrowAsync(saleId);
+            var sale = await GetSaleWithItemsOrThrowAsync(saleId, cancellationToken);
 
             var saleItem = sale?.Items?.Find(item => 
                 item.Sequence == sequence)
@@ -122,7 +122,8 @@ public class SaleService(
         DateTimeOffset? endDate = default,
         int page = 1,
         int maxResults = 10,
-        string? orderByClause = default)
+        string? orderByClause = default,
+        CancellationToken cancellationToken = default)
     {
         try
         {
@@ -131,7 +132,7 @@ public class SaleService(
 
             var criteria = BuildCriteria(id, branchId, userId, status, startDate, endDate);
 
-            var result = await repository.GetAsync(page, maxResults, criteria, orderByClause);
+            var result = await repository.GetAsync(page, maxResults, criteria, orderByClause, cancellationToken);
 
             return result;
         }
@@ -145,11 +146,11 @@ public class SaleService(
         }
     }
 
-    public async Task<Sale?> GetByIdAsync(int id)
+    public async Task<Sale?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
     {
         try
         {
-            var sale = await repository.GetWithItemsByIdAsync(id);
+            var sale = await repository.GetWithItemsByIdAsync(id, cancellationToken);
 
             return sale;
         }
@@ -159,11 +160,11 @@ public class SaleService(
         }
     }
 
-    public async Task<Sale> UpdateAsync(int saleId, Sale request)
+    public async Task<Sale> UpdateAsync(int saleId, Sale request, CancellationToken cancellationToken = default)
     {
         try
         {
-            var existingSale = await GetSaleWithItemsOrThrowAsync(saleId);
+            var existingSale = await GetSaleWithItemsOrThrowAsync(saleId, cancellationToken);
 
             ValidateForUpdate(existingSale);
 
@@ -178,16 +179,16 @@ public class SaleService(
                 existingSale.Items ??= [];
                 existingSale.Items.Clear();
 
-                await ProcessItemsAsync(existingSale, request.Items);
+                await ProcessItemsAsync(existingSale, request.Items, cancellationToken);
             }
 
             existingSale.TotalAmount = CalculateTotalAmount(existingSale.Items ?? []);
 
-            await ValidateSaleAsync(existingSale);
+            await ValidateSaleAsync(existingSale, cancellationToken);
 
-            await repository.UpdateAsync(existingSale);
+            await repository.UpdateAsync(existingSale, cancellationToken);
 
-            await PublishSaleMessageAsync(new SaleUpdatedEvent(existingSale));
+            await PublishSaleMessageAsync(new SaleUpdatedEvent(existingSale), cancellationToken);
 
             return existingSale;
         }
@@ -201,11 +202,11 @@ public class SaleService(
         }
     }
 
-    public async Task<Sale> CancelAsync(int saleId)
+    public async Task<Sale> CancelAsync(int saleId, CancellationToken cancellationToken = default)
     {
         try
         {
-            var sale = await repository.GetByIdAsync(saleId)
+            var sale = await repository.GetByIdAsync(saleId, cancellationToken)
                 ?? throw new NotFoundException($"Sale with ID {saleId} not found.");
 
             if (sale.Status == SaleStatus.Canceled)
@@ -214,9 +215,9 @@ public class SaleService(
             sale.Status = SaleStatus.Canceled;
             sale.CancelledAt = DateTimeOffset.Now;
 
-            await repository.UpdateAsync(sale);
+            await repository.UpdateAsync(sale, cancellationToken);
 
-            await PublishSaleMessageAsync(new SaleCancelledEvent(sale));
+            await PublishSaleMessageAsync(new SaleCancelledEvent(sale), cancellationToken);
 
             return sale;
         }
@@ -230,13 +231,13 @@ public class SaleService(
         }
     }
 
-    public async Task DeleteAsync(int saleId)
+    public async Task DeleteAsync(int saleId, CancellationToken cancellationToken = default)
     {
         try
         {
-            var existingSale = await GetSaleOrThrowAsync(saleId);
+            var existingSale = await GetSaleOrThrowAsync(saleId, cancellationToken);
 
-            await repository.DeleteAsync(existingSale);
+            await repository.DeleteAsync(existingSale, cancellationToken);
         }
         catch (BaseException)
         {
@@ -250,13 +251,13 @@ public class SaleService(
 
     #region CreateSale
 
-    private async Task ProcessItemsAsync(Sale sale, List<SaleItem> items)
+    private async Task ProcessItemsAsync(Sale sale, List<SaleItem> items, CancellationToken cancellationToken)
     {
         short sequence = 1;
 
         foreach (var item in items)
         {
-            var saleItem = await ProcessItemAsync(sale.BranchId, item, sequence);
+            var saleItem = await ProcessItemAsync(sale.BranchId, item, sequence, cancellationToken);
             sale.Items!.Add(saleItem);
             sale.TotalAmount += saleItem.Price;
 
@@ -264,9 +265,9 @@ public class SaleService(
         }
     }
 
-    private async Task<SaleItem> ProcessItemAsync(int branchId, SaleItem requestItem, short sequence)
+    private async Task<SaleItem> ProcessItemAsync(int branchId, SaleItem requestItem, short sequence, CancellationToken cancellationToken)
     {
-        var branchProduct = await GetBranchProductOrThrowAsync(branchId, requestItem.ProductId);
+        var branchProduct = await GetBranchProductOrThrowAsync(branchId, requestItem.ProductId, cancellationToken);
 
         if (branchProduct.StockQuantity < requestItem.Quantity)
             throw new ItemOutOfStockException($"Product {branchProduct.ProductTitle} is out of stock.");
@@ -310,14 +311,14 @@ public class SaleService(
         return 10;
     }
 
-    private async Task UpdateStockQuantitiesAsync(List<SaleItem> items, int branchId)
+    private async Task UpdateStockQuantitiesAsync(List<SaleItem> items, int branchId, CancellationToken cancellationToken)
     {
         foreach (var item in items)
         {
-            var branchProduct = await GetBranchProductOrThrowAsync(branchId, item.ProductId);
+            var branchProduct = await GetBranchProductOrThrowAsync(branchId, item.ProductId, cancellationToken);
 
             branchProduct.StockQuantity -= item.Quantity;
-            await branchProductRepository.UpdateAsync(branchProduct);
+            await branchProductRepository.UpdateAsync(branchProduct, cancellationToken);
         }
     }
 
@@ -344,19 +345,19 @@ public class SaleService(
     private static decimal CalculateTotalAmount(List<SaleItem> items)
         => items.Where(item => !item.IsCancelled).Sum(item => item.Price);
 
-    private async Task<Sale> GetSaleOrThrowAsync(int saleId)
-        => await repository.GetByIdAsync(saleId)
+    private async Task<Sale> GetSaleOrThrowAsync(int saleId, CancellationToken cancellationToken)
+        => await repository.GetByIdAsync(saleId, cancellationToken)
             ?? throw new NotFoundException($"Sale with ID {saleId} not found.");
 
-    private async Task<Sale> GetSaleWithItemsOrThrowAsync(int id)
-        => await repository.GetWithItemsByIdAsync(id)
+    private async Task<Sale> GetSaleWithItemsOrThrowAsync(int id, CancellationToken cancellationToken)
+        => await repository.GetWithItemsByIdAsync(id, cancellationToken)
             ?? throw new NotFoundException($"Sale with ID {id} not found.");
 
-    private async Task PublishSaleMessageAsync(BaseEvent @event)
+    private async Task PublishSaleMessageAsync(BaseEvent @event, CancellationToken cancellationToken)
     {
         try
         {
-            await rabbitMQIntegration.PublishMessageAsync(@event);
+            await rabbitMQIntegration.PublishMessageAsync(@event, cancellationToken);
         }
         catch (Exception ex)
         {
@@ -364,19 +365,19 @@ public class SaleService(
         }
     }
 
-    private async Task<BranchProduct> GetBranchProductOrThrowAsync(int branchId, int productId)
+    private async Task<BranchProduct> GetBranchProductOrThrowAsync(int branchId, int productId, CancellationToken cancellationToken)
     {
         var result = await branchProductRepository.GetAsync(1, 1,
-            p => p.IsActive && p.BranchId == branchId && p.ProductId == productId);
+            p => p.IsActive && p.BranchId == branchId && p.ProductId == productId, default, cancellationToken);
 
         return result.Items.Count > 0
             ? result.Items[0]
             : throw new NotFoundException($"Product ID {productId} not found or inactive in branch ID {branchId}.");
     }
 
-    private async Task ValidateSaleAsync(Sale sale)
+    private async Task ValidateSaleAsync(Sale sale, CancellationToken cancellationToken)
     {
-        var validationResult = await validator.ValidateAsync(sale);
+        var validationResult = await validator.ValidateAsync(sale, cancellationToken);
 
         if (!validationResult.IsValid)
             throw new ValidationException(validationResult.Errors);

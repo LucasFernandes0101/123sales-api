@@ -10,12 +10,12 @@ namespace _123vendas.Infrastructure.Repositories;
 [ExcludeFromCodeCoverage]
 public class BranchProductRepository(PostgreDbContext context) : BaseRepository<BranchProduct>(context), IBranchProductRepository
 {
-    public async Task UpdateByProductIdAsync(int productId, string productName, ProductCategory productCategory)
+    public async Task UpdateByProductIdAsync(int productId, string productName, ProductCategory productCategory, CancellationToken cancellationToken = default)
     {
         await _dbContext.Set<BranchProduct>()
             .Where(bp => bp.ProductId == productId)
             .ExecuteUpdateAsync(s => s
                 .SetProperty(bp => bp.ProductTitle, productName)
-                .SetProperty(bp => bp.ProductCategory, productCategory));
+                .SetProperty(bp => bp.ProductCategory, productCategory), cancellationToken);
     }
 }
