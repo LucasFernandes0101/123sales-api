@@ -60,7 +60,7 @@ public class BranchProductServiceTest
     public async Task DeleteAsync_ShouldDeleteBranchProduct_WhenValidId()
     {
         // Arrange
-        var (repository, productRepository, validator, service) = CreateDependencies();
+        var (repository, _, validator, service) = CreateDependencies();
         var branchProduct = new BranchProductMock().Generate();
         repository.GetByIdAsync(branchProduct.Id).Returns(branchProduct);
 
@@ -76,7 +76,7 @@ public class BranchProductServiceTest
     public async Task DeleteAsync_ShouldThrowNotFoundException_WhenBranchProductNotFound()
     {
         // Arrange
-        var (repository, productRepository, validator, service) = CreateDependencies();
+        var (repository, _, _, service) = CreateDependencies();
         var invalidId = 999;
         repository.GetByIdAsync(invalidId).Returns(default(BranchProduct));
 
@@ -93,7 +93,7 @@ public class BranchProductServiceTest
     public async Task GetAllAsync_ShouldReturnBranchProducts_WhenValidCriteria()
     {
         // Arrange
-        var (repository, productRepository, validator, service) = CreateDependencies();
+        var (repository, _, _, service) = CreateDependencies();
         var branchProducts = new BranchProductMock().Generate(1);
         repository.GetAsync(1, 10, Arg.Any<Expression<Func<BranchProduct, bool>>?>())
             .Returns(new PagedResult<BranchProduct>(1, branchProducts));
@@ -111,7 +111,7 @@ public class BranchProductServiceTest
     public async Task GetByIdAsync_ShouldReturnBranchProduct_WhenValidId()
     {
         // Arrange
-        var (repository, productRepository, validator, service) = CreateDependencies();
+        var (repository, _, _, service) = CreateDependencies();
         var branchProduct = new BranchProductMock().Generate();
         repository.GetByIdAsync(branchProduct.Id).Returns(branchProduct);
 
@@ -127,7 +127,7 @@ public class BranchProductServiceTest
     public async Task UpdateAsync_ShouldUpdateBranchProduct_WhenValidBranchProduct()
     {
         // Arrange
-        var (repository, productRepository, validator, service) = CreateDependencies();
+        var (repository, _, validator, service) = CreateDependencies();
         var existingBranchProduct = new BranchProductMock().Generate();
         var updateBranchProduct = new BranchProductMock().Generate();
 

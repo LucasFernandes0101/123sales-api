@@ -23,7 +23,7 @@ public class ProductServiceTest
     public async Task CreateAsync_ShouldCreateProduct_WhenValidInput()
     {
         // Arrange
-        var (productRepository, branchProductRepository, validator, productService) = CreateDependencies();
+        var (productRepository, _, validator, productService) = CreateDependencies();
         var mockProduct = new ProductMock().Generate();
         validator.ValidateAsync(mockProduct).Returns(Task.FromResult(new ValidationResult()));
         productRepository.AddAsync(mockProduct).Returns(mockProduct);
@@ -42,7 +42,7 @@ public class ProductServiceTest
     public async Task CreateAsync_ShouldThrowValidationException_WhenValidationFails()
     {
         // Arrange
-        var (productRepository, branchProductRepository, validator, productService) = CreateDependencies();
+        var (_, _, validator, productService) = CreateDependencies();
         var mockProduct = new ProductMock().Generate();
 
         validator.ValidateAsync(mockProduct).Throws(new ValidationException("Validation failed."));
@@ -57,7 +57,7 @@ public class ProductServiceTest
     public async Task DeleteAsync_ShouldDeleteProduct_WhenValidId()
     {
         // Arrange
-        var (productRepository, branchProductRepository, validator, productService) = CreateDependencies();
+        var (productRepository, _, _, productService) = CreateDependencies();
         var mockProduct = new ProductMock().Generate();
         productRepository.GetByIdAsync(mockProduct.Id).Returns(mockProduct);
 
@@ -73,7 +73,7 @@ public class ProductServiceTest
     public async Task DeleteAsync_ShouldThrowNotFoundException_WhenProductNotFound()
     {
         // Arrange
-        var (productRepository, branchProductRepository, validator, productService) = CreateDependencies();
+        var (productRepository, _, _, productService) = CreateDependencies();
         var invalidId = 999;
         productRepository.GetByIdAsync(invalidId).Returns(default(Product));
 
@@ -87,7 +87,7 @@ public class ProductServiceTest
     public async Task GetAllAsync_ShouldReturnProductList_WhenValidParameters()
     {
         // Arrange
-        var (productRepository, branchProductRepository, validator, productService) = CreateDependencies();
+        var (productRepository, _, _, productService) = CreateDependencies();
         var mockProducts = new List<Product> { new ProductMock().Generate(), new ProductMock().Generate() };
         productRepository.GetAsync(1, 10, Arg.Any<Expression<Func<Product, bool>>>())
             .Returns(new PagedResult<Product>(mockProducts.Count, mockProducts));
@@ -105,7 +105,7 @@ public class ProductServiceTest
     public async Task UpdateAsync_ShouldUpdateProduct_WhenValidInput()
     {
         // Arrange
-        var (productRepository, branchProductRepository, validator, productService) = CreateDependencies();
+        var (productRepository, _, validator, productService) = CreateDependencies();
         var mockProduct = new ProductMock().Generate();
         productRepository.GetByIdAsync(mockProduct.Id).Returns(mockProduct);
         validator.ValidateAsync(mockProduct).Returns(Task.FromResult(new ValidationResult()));
@@ -123,7 +123,7 @@ public class ProductServiceTest
     public async Task UpdateAsync_ShouldThrowNotFoundException_WhenProductNotFound()
     {
         // Arrange
-        var (productRepository, branchProductRepository, validator, productService) = CreateDependencies();
+        var (productRepository, _, _, productService) = CreateDependencies();
         var mockProduct = new ProductMock().Generate();
         productRepository.GetByIdAsync(mockProduct.Id).Returns(default(Product));
 

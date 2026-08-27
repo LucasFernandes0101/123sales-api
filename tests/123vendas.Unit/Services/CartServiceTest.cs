@@ -60,7 +60,7 @@ public class CartServiceTest
     public async Task DeleteAsync_ShouldDeleteCart_WhenValidId()
     {
         // Arrange
-        var (repository, validator, service) = CreateDependencies();
+        var (repository, _, service) = CreateDependencies();
 
         var cart = new CartMock().Generate();
         repository.GetByIdAsync(cart.Id).Returns(cart);
@@ -77,7 +77,7 @@ public class CartServiceTest
     public async Task DeleteAsync_ShouldThrowNotFoundException_WhenCartNotFound()
     {
         // Arrange
-        var (repository, validator, service) = CreateDependencies();
+        var (repository, _, service) = CreateDependencies();
 
         var invalidId = 999;
         repository.GetByIdAsync(invalidId).Returns(default(Cart));
@@ -95,7 +95,7 @@ public class CartServiceTest
     public async Task GetAllAsync_ShouldReturnCarts_WhenValidParameters()
     {
         // Arrange
-        var (repository, validator, service) = CreateDependencies();
+        var (repository, _, service) = CreateDependencies();
 
         var carts = new CartMock().Generate(2);
         repository.GetAsync(1, 10, Arg.Any<Expression<Func<Cart, bool>>>())
@@ -114,7 +114,7 @@ public class CartServiceTest
     public async Task GetByIdAsync_ShouldReturnCart_WhenCartExists()
     {
         // Arrange
-        var (repository, validator, service) = CreateDependencies();
+        var (repository, _, service) = CreateDependencies();
 
         var cart = new CartMock().Generate();
         repository.GetWithProductsByIdAsync(cart.Id).Returns(cart);
@@ -132,7 +132,7 @@ public class CartServiceTest
     public async Task GetByIdAsync_ShouldThrowServiceException_WhenErrorOccurs()
     {
         // Arrange
-        var (repository, validator, service) = CreateDependencies();
+        var (repository, _, service) = CreateDependencies();
 
         var invalidId = 999;
         repository.GetWithProductsByIdAsync(invalidId).Returns(Task.FromException<Cart?>(new Exception("Database error")));
@@ -205,7 +205,7 @@ public class CartServiceTest
     public async Task UpdateAsync_ShouldThrowNotFoundException_WhenCartNotFound()
     {
         // Arrange
-        var (repository, validator, service) = CreateDependencies();
+        var (repository, _, service) = CreateDependencies();
 
         var cart = new CartMock().Generate();
 
