@@ -26,7 +26,7 @@ The solution is split into four projects following DDD layering:
 │                                             │  Swagger, middleware, API versioning
 ├─────────────────────────────────────────────┤
 │           123vendas.Application             │  Application services, MediatR handlers,
-│                                             │  JWT, AutoMapper, FluentValidation
+│                                             │  JWT, manual mapping, FluentValidation
 ├─────────────────────────────────────────────┤
 │          123vendas.Infrastructure           │  EF Core, PostgreSQL, RabbitMQ,
 │                                             │  repository implementations, seeders
@@ -56,7 +56,7 @@ Dependencies flow inward: `Api → Application → Domain ← Infrastructure`. T
 | Message Broker | RabbitMQ 4 |
 | Authentication | JWT Bearer + BCrypt |
 | Validation | FluentValidation |
-| Mapping | AutoMapper |
+| Mapping | Manual (extension methods) |
 | Mediation | MediatR |
 | Logging | Serilog |
 | API Versioning | Asp.Versioning.Mvc |
@@ -77,7 +77,7 @@ Dependencies flow inward: `Api → Application → Domain ← Infrastructure`. T
 123sales-api/
 ├── src/
 │   ├── 123vendas.Api/              # Controllers, middleware, Swagger config
-│   ├── 123vendas.Application/       # Services, handlers, JWT, AutoMapper profiles
+│   ├── 123vendas.Application/       # Services, handlers, JWT, manual mappers
 │   ├── 123vendas.Domain/            # Entities, enums, interfaces, validators
 │   └── 123vendas.Infrastructure/    # DbContext, repositories, RabbitMQ, seeders
 ├── tests/
