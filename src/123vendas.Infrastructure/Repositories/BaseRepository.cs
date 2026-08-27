@@ -15,11 +15,12 @@ public abstract class BaseRepository<T>(PostgreDbContext dbContext) : IBaseRepos
 {
     protected readonly PostgreDbContext _dbContext = dbContext;
 
-    public async Task<PagedResult<T>> GetAsync(int page = 1,
-                                               int maxResults = 10,
-                                               Expression<Func<T, bool>>? criteria = default,
-                                               string? orderByClause = default,
-                                               CancellationToken cancellationToken = default)
+    public async Task<PagedResult<T>> GetAsync(
+        int page = 1,
+        int maxResults = 10,
+        Expression<Func<T, bool>>? criteria = default,
+        string? orderByClause = default,
+        CancellationToken cancellationToken = default)
     {
         page = page == 0 ? 1 : page;
         int count = (page - 1) * maxResults;
