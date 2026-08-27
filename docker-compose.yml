@@ -15,6 +15,7 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+    restart: unless-stopped
 
   rabbitmq:
     image: rabbitmq:4-management-alpine
@@ -30,6 +31,7 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+    restart: unless-stopped
 
   api:
     build:
@@ -51,8 +53,16 @@ services:
       RABBITMQ_VIRTUALHOST: "/"
       RABBITMQ_PASSWORD: "guest"
       SEED_DATABASE_FLAG: "true"
+      LOG_LEVEL: "Information"
     ports:
       - "8080:8080"
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c 'cat < /dev/null > /dev/tcp/localhost/8080' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    restart: unless-stopped
 
 volumes:
   postgres_data:

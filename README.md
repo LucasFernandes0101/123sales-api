@@ -156,6 +156,8 @@ docker compose up --build
 
 The API will be available at `http://localhost:8080`, and Swagger UI at `http://localhost:8080/swagger`.
 
+A health check endpoint is available at `http://localhost:8080/health`.
+
 RabbitMQ Management UI is available at `http://localhost:15672` (guest/guest).
 
 ### Option 2: Local Execution
@@ -185,6 +187,7 @@ To run the project locally, you need to configure the following environment vari
 * **RABBITMQ_VIRTUALHOST**: Virtual host in RabbitMQ, allowing logical separation of environments or applications on the same server.
 * **RABBITMQ_PASSWORD**: Password corresponding to the user defined to access RabbitMQ.
 * **SEED_DATABASE_FLAG**: Flag used to control the execution of initial data seeds in the database, useful for development and testing environments.
+* **LOG_LEVEL**: Defines the minimum log level for Serilog (e.g., Information, Warning, Error, Debug).
 
 > **Notes:**
 >
