@@ -41,7 +41,7 @@ public class ProductsController(IProductService productService) : ControllerBase
             request.OrderByClause,
             cancellationToken);
 
-        if (pagedResult?.Items is not null && pagedResult.Items.Count > 0)
+        if (pagedResult?.Items is not null && pagedResult.Items.Any())
             return Ok(
                 new PagedResponseDTO<ProductGetResponseDTO>(
                     pagedResult.Items.ToDTO(),
@@ -112,7 +112,7 @@ public class ProductsController(IProductService productService) : ControllerBase
             orderByClause: request.OrderByClause,
             cancellationToken: cancellationToken);
 
-        if (pagedResult?.Items is not null && pagedResult.Items.Count > 0)
+        if (pagedResult?.Items is not null && pagedResult.Items.Any())
             return Ok(
                 new PagedResponseDTO<ProductGetResponseDTO>(
                     pagedResult.Items.ToDTO(),

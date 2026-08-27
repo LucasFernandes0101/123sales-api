@@ -39,7 +39,7 @@ public class BranchProductsController(IBranchProductService branchProductService
             request.OrderByClause,
             cancellationToken);
 
-        if (pagedResult?.Items is not null && pagedResult.Items.Count > 0)
+        if (pagedResult?.Items is not null && pagedResult.Items.Any())
             return Ok(
                 new PagedResponseDTO<BranchProductGetResponseDTO>(
                     pagedResult.Items.ToDTO(),

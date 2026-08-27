@@ -154,7 +154,7 @@ public class CartService(
         if (existingCart.Products is null) return;
 
         var productsToRemove = existingCart.Products
-            .Where(cp => updatedProducts.Count(up => up.ProductId == cp.ProductId) == 0)
+            .Where(cp => !updatedProducts.Any(up => up.ProductId == cp.ProductId))
             .ToList();
 
         foreach (var product in productsToRemove)
