@@ -25,7 +25,7 @@ public class AuthenticateUserHandler(
 
         var token = await jwtTokenGenerator.GenerateTokenAsync(user);
 
-        return new AuthenticateUserResult
+        return new()
         {
             Id = user.Id,
             Token = token,

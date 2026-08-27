@@ -18,7 +18,7 @@ public class RabbitMQIntegration : IRabbitMQIntegration, IDisposable
 
     public RabbitMQIntegration()
     {
-        _connectionFactory = new ConnectionFactory
+        _connectionFactory = new()
         {
             HostName = Environment.GetEnvironmentVariable("RABBITMQ_HOSTNAME") ?? "localhost",
             UserName = Environment.GetEnvironmentVariable("RABBITMQ_USERNAME") ?? "guest",
