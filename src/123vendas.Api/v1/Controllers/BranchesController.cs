@@ -23,7 +23,9 @@ public class BranchesController(IBranchService branchService) : ControllerBase
     [HttpGet]
     [ProducesResponseType(typeof(PagedResponseDTO<BranchGetResponseDTO>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-    public async Task<ActionResult<PagedResponseDTO<BranchGetResponseDTO>>> GetAsync([FromQuery] BranchGetRequestDTO request, CancellationToken cancellationToken)
+    public async Task<ActionResult<PagedResponseDTO<BranchGetResponseDTO>>> GetAsync(
+        [FromQuery] BranchGetRequestDTO request,
+        CancellationToken cancellationToken)
     {
         var pagedResult = await branchService.GetAllAsync(
             request.Id,
@@ -37,7 +39,12 @@ public class BranchesController(IBranchService branchService) : ControllerBase
             cancellationToken);
 
         if (pagedResult?.Items is not null && pagedResult.Items.Count > 0)
-            return Ok(new PagedResponseDTO<BranchGetResponseDTO>(pagedResult.Items.ToDTO(), pagedResult.Total, request.Page, request.Size));
+            return Ok(
+                new PagedResponseDTO<BranchGetResponseDTO>(
+                    pagedResult.Items.ToDTO(),
+                    pagedResult.Total,
+                    request.Page,
+                    request.Size));
 
         return NoContent();
     }
@@ -50,7 +57,9 @@ public class BranchesController(IBranchService branchService) : ControllerBase
     [HttpGet("{id}")]
     [ProducesResponseType(typeof(BranchGetDetailResponseDTO), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<BranchGetDetailResponseDTO>> GetAsync([FromRoute] int id, CancellationToken cancellationToken)
+    public async Task<ActionResult<BranchGetDetailResponseDTO>> GetAsync(
+        [FromRoute] int id,
+        CancellationToken cancellationToken)
     {
         var branch = await branchService.GetByIdAsync(id, cancellationToken);
 
@@ -71,7 +80,9 @@ public class BranchesController(IBranchService branchService) : ControllerBase
     [HttpPost]
     [ProducesResponseType(typeof(BranchPostResponseDTO), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ErrorResponseDTO), StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<BranchPostResponseDTO>> PostAsync([FromBody] BranchPostRequestDTO request, CancellationToken cancellationToken)
+    public async Task<ActionResult<BranchPostResponseDTO>> PostAsync(
+        [FromBody] BranchPostRequestDTO request,
+        CancellationToken cancellationToken)
     {
         var createdBranch = await branchService.CreateAsync(request.ToEntity(), cancellationToken);
 
@@ -91,7 +102,10 @@ public class BranchesController(IBranchService branchService) : ControllerBase
     [ProducesResponseType(typeof(BranchPutResponseDTO), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponseDTO), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> PutAsync([FromRoute] int id, [FromBody] BranchPutRequestDTO request, CancellationToken cancellationToken)
+    public async Task<IActionResult> PutAsync(
+        [FromRoute] int id,
+        [FromBody] BranchPutRequestDTO request,
+        CancellationToken cancellationToken)
     {
         var branch = await branchService.UpdateAsync(id, request.ToEntity(), cancellationToken);
 

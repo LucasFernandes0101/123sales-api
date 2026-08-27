@@ -24,7 +24,9 @@ public class UsersController(IMediator mediator) : ControllerBase
     [ProducesResponseType(typeof(UserPostResponseDTO), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ErrorResponseDTO), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponseDTO), StatusCodes.Status409Conflict)]
-    public async Task<ActionResult<UserPostResponseDTO>> PostAsync([FromBody] UserPostRequestDTO dto, CancellationToken cancellationToken)
+    public async Task<ActionResult<UserPostResponseDTO>> PostAsync(
+        [FromBody] UserPostRequestDTO dto,
+        CancellationToken cancellationToken)
     {
         var command = dto.ToCommand();
 
@@ -43,7 +45,9 @@ public class UsersController(IMediator mediator) : ControllerBase
     [HttpGet("{id}")]
     [ProducesResponseType(typeof(UserGetResponseDTO), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponseDTO), StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<UserGetResponseDTO>> GetByIdAsync(int id, CancellationToken cancellationToken)
+    public async Task<ActionResult<UserGetResponseDTO>> GetByIdAsync(
+        int id,
+        CancellationToken cancellationToken)
     {
         var command = new GetUserCommand(id);
 

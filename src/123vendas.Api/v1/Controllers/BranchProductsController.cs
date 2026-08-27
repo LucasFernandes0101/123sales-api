@@ -23,7 +23,9 @@ public class BranchProductsController(IBranchProductService branchProductService
     [HttpGet]
     [ProducesResponseType(typeof(PagedResponseDTO<BranchProductGetResponseDTO>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-    public async Task<ActionResult<PagedResponseDTO<BranchProductGetResponseDTO>>> GetAsync([FromQuery] BranchProductGetRequestDTO request, CancellationToken cancellationToken)
+    public async Task<ActionResult<PagedResponseDTO<BranchProductGetResponseDTO>>> GetAsync(
+        [FromQuery] BranchProductGetRequestDTO request,
+        CancellationToken cancellationToken)
     {
         var pagedResult = await branchProductService.GetAllAsync(
             request.Id,
@@ -38,7 +40,12 @@ public class BranchProductsController(IBranchProductService branchProductService
             cancellationToken);
 
         if (pagedResult?.Items is not null && pagedResult.Items.Count > 0)
-            return Ok(new PagedResponseDTO<BranchProductGetResponseDTO>(pagedResult.Items.ToDTO(), pagedResult.Total, request.Page, request.Size));
+            return Ok(
+                new PagedResponseDTO<BranchProductGetResponseDTO>(
+                    pagedResult.Items.ToDTO(),
+                    pagedResult.Total,
+                    request.Page,
+                    request.Size));
 
         return NoContent();
     }
@@ -51,7 +58,9 @@ public class BranchProductsController(IBranchProductService branchProductService
     [HttpGet("{id}")]
     [ProducesResponseType(typeof(BranchProductGetDetailResponseDTO), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<BranchProductGetDetailResponseDTO>> GetAsync([FromRoute] int id, CancellationToken cancellationToken)
+    public async Task<ActionResult<BranchProductGetDetailResponseDTO>> GetAsync(
+        [FromRoute] int id,
+        CancellationToken cancellationToken)
     {
         var branchProduct = await branchProductService.GetByIdAsync(id, cancellationToken);
 
@@ -72,7 +81,9 @@ public class BranchProductsController(IBranchProductService branchProductService
     [HttpPost]
     [ProducesResponseType(typeof(BranchProductPostResponseDTO), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ErrorResponseDTO), StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<BranchProductPostResponseDTO>> PostAsync([FromBody] BranchProductPostRequestDTO request, CancellationToken cancellationToken)
+    public async Task<ActionResult<BranchProductPostResponseDTO>> PostAsync(
+        [FromBody] BranchProductPostRequestDTO request,
+        CancellationToken cancellationToken)
     {
         var createdBranchProduct = await branchProductService.CreateAsync(request.ToEntity(), cancellationToken);
 
@@ -92,7 +103,10 @@ public class BranchProductsController(IBranchProductService branchProductService
     [ProducesResponseType(typeof(BranchProductPutResponseDTO), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponseDTO), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<BranchProductPutResponseDTO>> PutAsync([FromRoute] int id, [FromBody] BranchProductPutRequestDTO request, CancellationToken cancellationToken)
+    public async Task<ActionResult<BranchProductPutResponseDTO>> PutAsync(
+        [FromRoute] int id,
+        [FromBody] BranchProductPutRequestDTO request,
+        CancellationToken cancellationToken)
     {
         var branchProduct = await branchProductService.UpdateAsync(id, request.ToEntity(), cancellationToken);
 

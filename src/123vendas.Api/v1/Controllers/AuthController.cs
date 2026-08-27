@@ -22,7 +22,9 @@ public class AuthController(IMediator mediator) : ControllerBase
     [ProducesResponseType(typeof(AuthenticateUserResponseDTO), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponseDTO), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponseDTO), StatusCodes.Status401Unauthorized)]
-    public async Task<ActionResult<AuthenticateUserResponseDTO>> AuthenticateUser([FromBody] AuthenticateUserRequestDTO request, CancellationToken cancellationToken)
+    public async Task<ActionResult<AuthenticateUserResponseDTO>> AuthenticateUser(
+        [FromBody] AuthenticateUserRequestDTO request,
+        CancellationToken cancellationToken)
     {
         var command = request.ToCommand();
 

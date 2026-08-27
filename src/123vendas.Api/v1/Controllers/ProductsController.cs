@@ -23,7 +23,9 @@ public class ProductsController(IProductService productService) : ControllerBase
     [HttpGet]
     [ProducesResponseType(typeof(PagedResponseDTO<ProductGetResponseDTO>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-    public async Task<ActionResult<PagedResponseDTO<ProductGetResponseDTO>>> GetAsync([FromQuery] ProductGetRequestDTO request, CancellationToken cancellationToken)
+    public async Task<ActionResult<PagedResponseDTO<ProductGetResponseDTO>>> GetAsync(
+        [FromQuery] ProductGetRequestDTO request,
+        CancellationToken cancellationToken)
     {
         var pagedResult = await productService.GetAllAsync(
             request.Id,
@@ -40,7 +42,12 @@ public class ProductsController(IProductService productService) : ControllerBase
             cancellationToken);
 
         if (pagedResult?.Items is not null && pagedResult.Items.Count > 0)
-            return Ok(new PagedResponseDTO<ProductGetResponseDTO>(pagedResult.Items.ToDTO(), pagedResult.Total, request.Page, request.Size));
+            return Ok(
+                new PagedResponseDTO<ProductGetResponseDTO>(
+                    pagedResult.Items.ToDTO(),
+                    pagedResult.Total,
+                    request.Page,
+                    request.Size));
 
         return NoContent();
     }
@@ -70,7 +77,9 @@ public class ProductsController(IProductService productService) : ControllerBase
     [HttpGet("{id}")]
     [ProducesResponseType(typeof(ProductGetDetailResponseDTO), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<ProductGetDetailResponseDTO>> GetAsync([FromRoute] int id, CancellationToken cancellationToken)
+    public async Task<ActionResult<ProductGetDetailResponseDTO>> GetAsync(
+        [FromRoute] int id,
+        CancellationToken cancellationToken)
     {
         var product = await productService.GetByIdAsync(id, cancellationToken);
 
@@ -91,7 +100,10 @@ public class ProductsController(IProductService productService) : ControllerBase
     [HttpGet("category/{category}")]
     [ProducesResponseType(typeof(PagedResponseDTO<ProductGetResponseDTO>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-    public async Task<ActionResult<PagedResponseDTO<ProductGetResponseDTO>>> GetByCategoryAsync(string category, [FromQuery] PagedRequestDTO request, CancellationToken cancellationToken)
+    public async Task<ActionResult<PagedResponseDTO<ProductGetResponseDTO>>> GetByCategoryAsync(
+        string category,
+        [FromQuery] PagedRequestDTO request,
+        CancellationToken cancellationToken)
     {
         var pagedResult = await productService.GetAllAsync(
             category: category,
@@ -101,7 +113,12 @@ public class ProductsController(IProductService productService) : ControllerBase
             cancellationToken: cancellationToken);
 
         if (pagedResult?.Items is not null && pagedResult.Items.Count > 0)
-            return Ok(new PagedResponseDTO<ProductGetResponseDTO>(pagedResult.Items.ToDTO(), pagedResult.Total, request.Page, request.Size));
+            return Ok(
+                new PagedResponseDTO<ProductGetResponseDTO>(
+                    pagedResult.Items.ToDTO(),
+                    pagedResult.Total,
+                    request.Page,
+                    request.Size));
 
         return NoContent();
     }
@@ -115,7 +132,9 @@ public class ProductsController(IProductService productService) : ControllerBase
     [HttpPost]
     [ProducesResponseType(typeof(ProductPostResponseDTO), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ErrorResponseDTO), StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<ProductPostResponseDTO>> PostAsync([FromBody] ProductPostRequestDTO request, CancellationToken cancellationToken)
+    public async Task<ActionResult<ProductPostResponseDTO>> PostAsync(
+        [FromBody] ProductPostRequestDTO request,
+        CancellationToken cancellationToken)
     {
         var createdProduct = await productService.CreateAsync(request.ToEntity(), cancellationToken);
 
@@ -134,7 +153,10 @@ public class ProductsController(IProductService productService) : ControllerBase
     [HttpPut("{id}")]
     [ProducesResponseType(typeof(ProductPutResponseDTO), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponseDTO), StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<ProductPutResponseDTO>> PutAsync([FromRoute] int id, [FromBody] ProductPutRequestDTO request, CancellationToken cancellationToken)
+    public async Task<ActionResult<ProductPutResponseDTO>> PutAsync(
+        [FromRoute] int id,
+        [FromBody] ProductPutRequestDTO request,
+        CancellationToken cancellationToken)
     {
         var product = await productService.UpdateAsync(id, request.ToEntity(), cancellationToken);
 

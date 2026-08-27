@@ -23,7 +23,9 @@ public class CartsController(ICartService cartService) : ControllerBase
     [ProducesResponseType(typeof(PagedResponseDTO<CartGetResponseDTO>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponseDTO), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponseDTO), StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<PagedResponseDTO<CartGetResponseDTO>>> GetAsync([FromQuery] CartGetRequestDTO request, CancellationToken cancellationToken)
+    public async Task<ActionResult<PagedResponseDTO<CartGetResponseDTO>>> GetAsync(
+        [FromQuery] CartGetRequestDTO request,
+        CancellationToken cancellationToken)
     {
         var pagedResult = await cartService.GetAllAsync(
             request.Id,
@@ -36,7 +38,12 @@ public class CartsController(ICartService cartService) : ControllerBase
             cancellationToken);
 
         if (pagedResult?.Items is not null && pagedResult.Items.Count > 0)
-            return Ok(new PagedResponseDTO<CartGetResponseDTO>(pagedResult.Items.ToDTO(), pagedResult.Total, request.Page, request.Size));
+            return Ok(
+                new PagedResponseDTO<CartGetResponseDTO>(
+                    pagedResult.Items.ToDTO(),
+                    pagedResult.Total,
+                    request.Page,
+                    request.Size));
 
         return NoContent();
     }
@@ -49,7 +56,9 @@ public class CartsController(ICartService cartService) : ControllerBase
     [HttpGet("{id}")]
     [ProducesResponseType(typeof(CartGetDetailResponseDTO), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponseDTO), StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<CartGetDetailResponseDTO>> GetAsync([FromRoute] int id, CancellationToken cancellationToken)
+    public async Task<ActionResult<CartGetDetailResponseDTO>> GetAsync(
+        [FromRoute] int id,
+        CancellationToken cancellationToken)
     {
         var cart = await cartService.GetByIdAsync(id, cancellationToken);
 
@@ -69,7 +78,9 @@ public class CartsController(ICartService cartService) : ControllerBase
     [HttpPost]
     [ProducesResponseType(typeof(CartPostResponseDTO), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ErrorResponseDTO), StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<CartPostResponseDTO>> PostAsync([FromBody] CartPostRequestDTO request, CancellationToken cancellationToken)
+    public async Task<ActionResult<CartPostResponseDTO>> PostAsync(
+        [FromBody] CartPostRequestDTO request,
+        CancellationToken cancellationToken)
     {
         var createdCart = await cartService.CreateAsync(request.ToEntity(), cancellationToken);
 
@@ -88,7 +99,10 @@ public class CartsController(ICartService cartService) : ControllerBase
     [ProducesResponseType(typeof(CartPutResponseDTO), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponseDTO), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponseDTO), StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<CartPutResponseDTO>> PutAsync([FromRoute] int id, [FromBody] CartPutRequestDTO request, CancellationToken cancellationToken)
+    public async Task<ActionResult<CartPutResponseDTO>> PutAsync(
+        [FromRoute] int id,
+        [FromBody] CartPutRequestDTO request,
+        CancellationToken cancellationToken)
     {
         var cart = await cartService.UpdateAsync(id, request.ToEntity(), cancellationToken);
 
