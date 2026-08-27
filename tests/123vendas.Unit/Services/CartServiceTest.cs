@@ -220,7 +220,7 @@ public class CartServiceTest
         await repository.DidNotReceive().UpdateAsync(Arg.Any<Cart>());
     }
 
-    private (ICartRepository repository, IValidator<Cart> validator, CartService service) CreateDependencies()
+    private static (ICartRepository repository, IValidator<Cart> validator, CartService service) CreateDependencies()
     {
         var repository = Substitute.For<ICartRepository>();
         var validator = Substitute.For<IValidator<Cart>>();

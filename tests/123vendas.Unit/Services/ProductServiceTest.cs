@@ -192,7 +192,7 @@ public class ProductServiceTest
             .UpdateByProductIdAsync(mockProduct.Id, mockProduct.Title!, updatedProduct.Category);
     }
 
-    private (IProductRepository productRepository, IBranchProductRepository branchProductRepository, IValidator<Product> validator, ProductService productService) CreateDependencies()
+    private static (IProductRepository productRepository, IBranchProductRepository branchProductRepository, IValidator<Product> validator, ProductService productService) CreateDependencies()
     {
         var productRepository = Substitute.For<IProductRepository>();
         var branchProductRepository = Substitute.For<IBranchProductRepository>();

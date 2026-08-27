@@ -143,7 +143,7 @@ public class BranchProductServiceTest
         await repository.Received(1).UpdateAsync(existingBranchProduct);
     }
 
-    private (IBranchProductRepository repository, IProductRepository productRepository, IValidator<BranchProduct> validator, BranchProductService service) CreateDependencies()
+    private static (IBranchProductRepository repository, IProductRepository productRepository, IValidator<BranchProduct> validator, BranchProductService service) CreateDependencies()
     {
         var repository = Substitute.For<IBranchProductRepository>();
         var productRepository = Substitute.For<IProductRepository>();

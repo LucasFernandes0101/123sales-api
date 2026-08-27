@@ -191,7 +191,7 @@ public class BranchServiceTest
             .WithMessage("Branch with ID 1 not found.");
     }
 
-    private (IBranchRepository repository, IValidator<Branch> validator, BranchService service) CreateDependencies()
+    private static (IBranchRepository repository, IValidator<Branch> validator, BranchService service) CreateDependencies()
     {
         var repository = Substitute.For<IBranchRepository>();
         var validator = Substitute.For<IValidator<Branch>>();

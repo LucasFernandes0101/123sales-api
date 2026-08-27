@@ -514,7 +514,7 @@ public class SaleServiceTest
         result.Should().BeNull();
     }
 
-    private (ISaleRepository, IBranchProductRepository, IValidator<Sale>, IRabbitMQIntegration, ILogger<SaleService>) CreateDependencies()
+    private static (ISaleRepository, IBranchProductRepository, IValidator<Sale>, IRabbitMQIntegration, ILogger<SaleService>) CreateDependencies()
     {
         var repository = Substitute.For<ISaleRepository>();
         var branchProductRepository = Substitute.For<IBranchProductRepository>();
