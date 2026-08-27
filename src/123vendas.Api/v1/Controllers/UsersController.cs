@@ -12,6 +12,8 @@ namespace _123vendas_server.v1.Controllers;
 [ApiController]
 [Route("api/v{version:apiVersion}/[controller]")]
 [ApiVersion("1.0")]
+[Tags("Users")]
+[Produces("application/json")]
 public class UsersController(IMediator mediator) : ControllerBase
 {
 
@@ -20,6 +22,9 @@ public class UsersController(IMediator mediator) : ControllerBase
     /// </summary>
     /// <param name="dto">The user data for creating a new user.</param>
     /// <returns>The created user's data.</returns>
+    /// <response code="201">Returns the created user data.</response>
+    /// <response code="400">If the request is invalid or missing required fields.</response>
+    /// <response code="409">If a user with the same email already exists.</response>
     [HttpPost]
     [ProducesResponseType(typeof(UserPostResponseDTO), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ErrorResponseDTO), StatusCodes.Status400BadRequest)]
@@ -42,11 +47,13 @@ public class UsersController(IMediator mediator) : ControllerBase
     /// </summary>
     /// <param name="id">The user ID.</param>
     /// <returns>The user data.</returns>
+    /// <response code="200">Returns the user data.</response>
+    /// <response code="404">If the user is not found.</response>
     [HttpGet("{id}")]
     [ProducesResponseType(typeof(UserGetResponseDTO), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponseDTO), StatusCodes.Status404NotFound)]
     public async Task<ActionResult<UserGetResponseDTO>> GetByIdAsync(
-        int id,
+        [FromRoute] int id,
         CancellationToken cancellationToken)
     {
         var command = new GetUserCommand(id);
@@ -67,11 +74,17 @@ public class UsersController(IMediator mediator) : ControllerBase
     /// </summary>
     /// <param name="id">The user ID.</param>
     /// <returns>No content if the user is successfully deleted.</returns>
+    /// <response code="204">If the user was successfully deleted.</response>
+    /// <response code="401">If the request is not authenticated.</response>
+    /// <response code="403">If the user does not have the Manager role.</response>
+    /// <response code="404">If the user is not found.</response>
     [Authorize(Policy = "ManagerOnly")]
     [HttpDelete("{id}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponseDTO), StatusCodes.Status404NotFound)]
-    public async Task<ActionResult> DeleteByIdAsync(int id, CancellationToken cancellationToken)
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<ActionResult> DeleteByIdAsync([FromRoute] int id, CancellationToken cancellationToken)
     {
         var command = new DeleteUserCommand(id);
 

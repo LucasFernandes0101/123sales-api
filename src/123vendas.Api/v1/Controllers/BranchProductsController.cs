@@ -12,17 +12,23 @@ namespace _123vendas_server.v1.Controllers;
 [ApiController]
 [Route("api/v{version:apiVersion}/[controller]")]
 [ApiVersion("1.0")]
+[Tags("Branch Products")]
+[Produces("application/json")]
 public class BranchProductsController(IBranchProductService branchProductService) : ControllerBase
 {
 
     /// <summary>
-    /// Retrieves a list of branch products based on the provided filter criteria and pagination parameters.
+    /// Retrieves a paginated list of branch products based on the provided filter criteria.
     /// </summary>
     /// <param name="request">The filter and pagination parameters for retrieving branch products.</param>
     /// <returns>A paged list of branch products matching the filter criteria.</returns>
+    /// <response code="200">Returns the paged list of branch products.</response>
+    /// <response code="204">If no branch products match the filter criteria.</response>
+    /// <response code="400">If the request parameters are invalid.</response>
     [HttpGet]
     [ProducesResponseType(typeof(PagedResponseDTO<BranchProductGetResponseDTO>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ErrorResponseDTO), StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<PagedResponseDTO<BranchProductGetResponseDTO>>> GetAsync(
         [FromQuery] BranchProductGetRequestDTO request,
         CancellationToken cancellationToken)
@@ -55,9 +61,11 @@ public class BranchProductsController(IBranchProductService branchProductService
     /// </summary>
     /// <param name="id">The ID of the branch product to retrieve.</param>
     /// <returns>The details of the branch product.</returns>
+    /// <response code="200">Returns the branch product details.</response>
+    /// <response code="404">If the branch product is not found.</response>
     [HttpGet("{id}")]
     [ProducesResponseType(typeof(BranchProductGetDetailResponseDTO), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponseDTO), StatusCodes.Status404NotFound)]
     public async Task<ActionResult<BranchProductGetDetailResponseDTO>> GetAsync(
         [FromRoute] int id,
         CancellationToken cancellationToken)
@@ -81,6 +89,8 @@ public class BranchProductsController(IBranchProductService branchProductService
     [HttpPost]
     [ProducesResponseType(typeof(BranchProductPostResponseDTO), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ErrorResponseDTO), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<ActionResult<BranchProductPostResponseDTO>> PostAsync(
         [FromBody] BranchProductPostRequestDTO request,
         CancellationToken cancellationToken)
@@ -102,7 +112,9 @@ public class BranchProductsController(IBranchProductService branchProductService
     [HttpPut("{id}")]
     [ProducesResponseType(typeof(BranchProductPutResponseDTO), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponseDTO), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponseDTO), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<ActionResult<BranchProductPutResponseDTO>> PutAsync(
         [FromRoute] int id,
         [FromBody] BranchProductPutRequestDTO request,
@@ -121,8 +133,10 @@ public class BranchProductsController(IBranchProductService branchProductService
     [Authorize(Policy = "ManagerOnly")]
     [HttpDelete("{id}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> DeleteAsync(int id, CancellationToken cancellationToken)
+    [ProducesResponseType(typeof(ErrorResponseDTO), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<IActionResult> DeleteAsync([FromRoute] int id, CancellationToken cancellationToken)
     {
         await branchProductService.DeleteAsync(id, cancellationToken);
 

@@ -21,8 +21,6 @@ builder.Services.AddCustomApiVersioning();
 
 builder.Services.AddEndpointsApiExplorer();
 
-builder.Services.AddSwaggerGen();
-
 builder.Services.ResolveDependencies();
 
 builder.Services.AddAuthenticationConfiguration();

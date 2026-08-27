@@ -11,6 +11,8 @@ namespace _123vendas_server.v1.Controllers;
 [ApiController]
 [Route("api/v{version:apiVersion}/[controller]")]
 [ApiVersion("1.0")]
+[Tags("Carts")]
+[Produces("application/json")]
 public class CartsController(ICartService cartService) : ControllerBase
 {
 
@@ -19,10 +21,13 @@ public class CartsController(ICartService cartService) : ControllerBase
     /// </summary>
     /// <param name="request">The filter parameters for the cart list.</param>
     /// <returns>A paginated response with the list of carts.</returns>
+    /// <response code="200">Returns the paginated list of carts.</response>
+    /// <response code="204">If no carts match the filter criteria.</response>
+    /// <response code="400">If the request parameters are invalid.</response>
     [HttpGet]
     [ProducesResponseType(typeof(PagedResponseDTO<CartGetResponseDTO>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponseDTO), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(ErrorResponseDTO), StatusCodes.Status404NotFound)]
     public async Task<ActionResult<PagedResponseDTO<CartGetResponseDTO>>> GetAsync(
         [FromQuery] CartGetRequestDTO request,
         CancellationToken cancellationToken)
@@ -53,6 +58,8 @@ public class CartsController(ICartService cartService) : ControllerBase
     /// </summary>
     /// <param name="id">The ID of the cart.</param>
     /// <returns>The detailed cart information.</returns>
+    /// <response code="200">Returns the cart details.</response>
+    /// <response code="404">If the cart is not found.</response>
     [HttpGet("{id}")]
     [ProducesResponseType(typeof(CartGetDetailResponseDTO), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponseDTO), StatusCodes.Status404NotFound)]
@@ -117,7 +124,7 @@ public class CartsController(ICartService cartService) : ControllerBase
     [HttpDelete("{id}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponseDTO), StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> DeleteAsync(int id, CancellationToken cancellationToken)
+    public async Task<IActionResult> DeleteAsync([FromRoute] int id, CancellationToken cancellationToken)
     {
         await cartService.DeleteAsync(id, cancellationToken);
 

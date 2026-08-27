@@ -10,14 +10,19 @@ namespace _123vendas_server.v1.Controllers;
 [ApiController]
 [Route("api/v{version:apiVersion}/[controller]")]
 [ApiVersion("1.0")]
+[Tags("Auth")]
+[Produces("application/json")]
 public class AuthController(IMediator mediator) : ControllerBase
 {
 
     /// <summary>
     /// Authenticates a user with their credentials.
     /// </summary>
-    /// <param name="request">The authentication request.</param>
+    /// <param name="request">The authentication request containing email and password.</param>
     /// <returns>Authentication token if successful.</returns>
+    /// <response code="200">Returns the authentication token and user details.</response>
+    /// <response code="400">If the request is invalid or missing required fields.</response>
+    /// <response code="401">If the credentials are invalid.</response>
     [HttpPost]
     [ProducesResponseType(typeof(AuthenticateUserResponseDTO), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponseDTO), StatusCodes.Status400BadRequest)]

@@ -12,17 +12,23 @@ namespace _123vendas_server.v1.Controllers;
 [ApiController]
 [Route("api/v{version:apiVersion}/[controller]")]
 [ApiVersion("1.0")]
+[Tags("Branches")]
+[Produces("application/json")]
 public class BranchesController(IBranchService branchService) : ControllerBase
 {
 
     /// <summary>
-    /// Retrieves a list of branches based on the provided filter criteria and pagination parameters.
+    /// Retrieves a paginated list of branches based on the provided filter criteria.
     /// </summary>
     /// <param name="request">The filter and pagination parameters for retrieving branches.</param>
     /// <returns>A paged list of branches matching the filter criteria.</returns>
+    /// <response code="200">Returns the paged list of branches.</response>
+    /// <response code="204">If no branches match the filter criteria.</response>
+    /// <response code="400">If the request parameters are invalid.</response>
     [HttpGet]
     [ProducesResponseType(typeof(PagedResponseDTO<BranchGetResponseDTO>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ErrorResponseDTO), StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<PagedResponseDTO<BranchGetResponseDTO>>> GetAsync(
         [FromQuery] BranchGetRequestDTO request,
         CancellationToken cancellationToken)
@@ -54,9 +60,11 @@ public class BranchesController(IBranchService branchService) : ControllerBase
     /// </summary>
     /// <param name="id">The ID of the branch to retrieve.</param>
     /// <returns>The details of the branch.</returns>
+    /// <response code="200">Returns the branch details.</response>
+    /// <response code="404">If the branch is not found.</response>
     [HttpGet("{id}")]
     [ProducesResponseType(typeof(BranchGetDetailResponseDTO), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponseDTO), StatusCodes.Status404NotFound)]
     public async Task<ActionResult<BranchGetDetailResponseDTO>> GetAsync(
         [FromRoute] int id,
         CancellationToken cancellationToken)
@@ -80,6 +88,8 @@ public class BranchesController(IBranchService branchService) : ControllerBase
     [HttpPost]
     [ProducesResponseType(typeof(BranchPostResponseDTO), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ErrorResponseDTO), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<ActionResult<BranchPostResponseDTO>> PostAsync(
         [FromBody] BranchPostRequestDTO request,
         CancellationToken cancellationToken)
@@ -101,7 +111,9 @@ public class BranchesController(IBranchService branchService) : ControllerBase
     [HttpPut("{id}")]
     [ProducesResponseType(typeof(BranchPutResponseDTO), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponseDTO), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponseDTO), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> PutAsync(
         [FromRoute] int id,
         [FromBody] BranchPutRequestDTO request,
@@ -120,8 +132,10 @@ public class BranchesController(IBranchService branchService) : ControllerBase
     [Authorize(Policy = "ManagerOnly")]
     [HttpDelete("{id}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> DeleteAsync(int id, CancellationToken cancellationToken)
+    [ProducesResponseType(typeof(ErrorResponseDTO), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<IActionResult> DeleteAsync([FromRoute] int id, CancellationToken cancellationToken)
     {
         await branchService.DeleteAsync(id, cancellationToken);
 
