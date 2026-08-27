@@ -1,79 +1,212 @@
-# 123vendas - Sales Management Platform
+# 123vendas — Sales Management API
+
+A RESTful sales management platform built with .NET 10 and Domain-Driven Design. Handles multi-branch product inventory, shopping carts, the full sales lifecycle (including partial item cancellation), and publishes domain events to RabbitMQ for downstream consumers.
 
 ## Table of Contents
 
-* [Project Goal](#project-goal)
-* [Technologies and Patterns Used](#technologies-and-patterns-used)
-* [Business Entities](#business-entities)
-* [Database Structure](#database-structure)
-* [Event Architecture: Integration with RabbitMQ](#event-architecture-integration-with-rabbitmq)
-* [Running the Project](#running-the-project)
-* [Improvement Points](#improvement-points)
+- [Architecture](#architecture)
+- [Tech Stack](#tech-stack)
+- [Project Structure](#project-structure)
+- [Domain Model](#domain-model)
+- [API Endpoints](#api-endpoints)
+- [Event-Driven Integration](#event-driven-integration)
+- [Database](#database)
+- [Running with Docker](#running-with-docker)
+- [Running Locally](#running-locally)
+- [Testing](#testing)
+- [Roadmap](#roadmap)
 
-## Project Goal
+## Architecture
 
-**123vendas** is an innovative platform that simplifies the management of sales, products, and customers for companies with multiple branches. The solution centralizes product and customer management, allowing inventory and pricing customization per branch. With a robust interface, the system supports the entire sales cycle, from creating and updating orders to canceling and managing inventory.
-
-This project demonstrates the use of modern technologies and patterns, highlighting the application of DDD, authentication and authorization with JWT, integration with RabbitMQ for sales events, and a scalable, maintainable software architecture.
-
-## Technologies and Patterns Used
-
-* **.NET 10**: Foundation for building scalable and robust applications.
-* **MediatR**: Used to promote decoupled communication. The pattern was applied specifically to the users and authentication area.
-* **Fluent Validations**: Data validation in a fluent and intuitive way.
-* **BCrypt**: Secure password hashing.
-* **Exception Middleware**: Centralized exception handling with appropriate HTTP responses.
-* **DDD (Domain-Driven Design)**: Structuring the system with a focus on the business domain.
-* **JWT**: Role-based authentication and authorization.
-* **Serilog**: Structured logging for monitoring and diagnostics.
-* **Automapper**: Automatic mapping between entities and DTOs.
-* **Asp.Versioning.Mvc**: API version management.
-* **Swagger**: Interactive and accessible documentation.
-* **Entity Framework Core**: Object-relational mapping with configurations via `IEntityTypeConfiguration`.
-* **IQueryable**: Dynamic and optimized queries.
-* **RabbitMQ.Client**: Integration with RabbitMQ for event-based communication.
-
-### Unit Tests
-
-* **xUnit**: Testing framework for .NET, ensuring modularity and ease of writing tests.
-* **FluentAssertions**: Fluent syntax for assertions, making tests more readable.
-* **Shouldly**: Better readability for test error messages.
-* **Bogus**: Fake data generation for unit tests.
-* **NSubstitute**: Dependency mocking to facilitate isolated testing.
-
-## Business Entities
-
-The project was designed with Domain-Driven Design principles, where entities represent essential components of the sales and management domain. Instead of exposing class details, the following aspects are highlighted:
-
-* **Base Entities**: All entities share common attributes such as a unique identifier, soft-delete control, and creation/update records, ensuring traceability and consistency.
-* **Branches and Products**: Branches are mapped to allow price customization and inventory control per unit. Products are associated with branches, enabling centralized management with local flexibility.
-* **Shopping Cart**: Models the selection of products made by users, keeping the relationship between chosen items and their quantities.
-* **Sales and Sale Items**: Capture the details of each transaction, including the sale status, items sold, and the possibility of partial or full cancellation.
-* **Users**: Store access information and personal data, defining roles that determine each user's permissions.
-
-Each entity was carefully designed to reflect business rules and needs, establishing clear relationships and integrity in the data model.
-
-## Database Structure
-
-The project uses **Postgres** as the relational database. The structure is defined using **Entity Framework Core** with modular configurations via `IEntityTypeConfiguration`, promoting a clean and organized design.
-
-Below is the database diagram used in this project:
-
-![Diagrama\_DB\_123Vendas](https://github.com/user-attachments/assets/2bbb0886-3591-4ead-bed4-2d9dc7111b71)
-
-> **Note:** This diagram represents the database structure and may be updated as needed.
-
-The project has a seed system controlled by a **feature flag** called:
+The solution is split into four projects following DDD layering:
 
 ```
-SEED_DATABASE_FLAG
+┌─────────────────────────────────────────────┐
+│              123vendas.Api                  │  Presentation layer — controllers,
+│                                             │  Swagger, middleware, API versioning
+├─────────────────────────────────────────────┤
+│           123vendas.Application             │  Application services, MediatR handlers,
+│                                             │  JWT, AutoMapper, FluentValidation
+├─────────────────────────────────────────────┤
+│          123vendas.Infrastructure           │  EF Core, PostgreSQL, RabbitMQ,
+│                                             │  repository implementations, seeders
+├─────────────────────────────────────────────┤
+│             123vendas.Domain                │  Entities, enums, interfaces,
+│                                             │  validators, domain exceptions
+└─────────────────────────────────────────────┘
 ```
 
-This flag is configured in the `launchSettings.json` file, inside the `environmentVariables` section, with the default value `"false"`. To enable seeding, simply change the value to `"true"`. The application will automatically populate the database with initial data, provided the tables are empty.
+Dependencies flow inward: `Api → Application → Domain ← Infrastructure`. The Domain layer has zero external dependencies — it defines interfaces that Infrastructure implements.
 
----
+### Key Decisions
 
-In the **PostgreDbContext** file, the constructor ensures the database will be created automatically if it does not exist:
+- **CQRS (partial)**: Users and Auth operations go through MediatR commands/queries. The heavier CRUD services (Branches, Products, Sales, Carts) use a service-based pattern for richer business logic.
+- **CancellationToken everywhere**: Every async method — from controllers down to EF Core queries — accepts and propagates a `CancellationToken`.
+- **Soft delete**: All entities inherit from `BaseEntity` with an `IsDeleted` flag. No records are physically removed.
+- **Pagination + dynamic ordering**: List endpoints accept `page`, `size`, and `orderByClause` parameters. Ordering is applied dynamically via `IQueryable` extensions.
+- **Primary constructors**: Used across services, handlers, and repositories for cleaner dependency injection.
+
+## Tech Stack
+
+| Category | Technology |
+|----------|-----------|
+| Runtime | .NET 10 |
+| ORM | Entity Framework Core 10 + Npgsql |
+| Database | PostgreSQL 17 |
+| Message Broker | RabbitMQ 4 |
+| Authentication | JWT Bearer + BCrypt |
+| Validation | FluentValidation |
+| Mapping | AutoMapper |
+| Mediation | MediatR |
+| Logging | Serilog |
+| API Versioning | Asp.Versioning.Mvc |
+| Documentation | Swashbuckle (Swagger) |
+
+### Test Stack
+
+| Category | Technology |
+|----------|-----------|
+| Framework | xUnit |
+| Assertions | FluentAssertions + Shouldly |
+| Mocking | NSubstitute |
+| Fake Data | Bogus |
+
+## Project Structure
+
+```
+123sales-api/
+├── src/
+│   ├── 123vendas.Api/              # Controllers, middleware, Swagger config
+│   ├── 123vendas.Application/       # Services, handlers, JWT, AutoMapper profiles
+│   ├── 123vendas.Domain/            # Entities, enums, interfaces, validators
+│   └── 123vendas.Infrastructure/    # DbContext, repositories, RabbitMQ, seeders
+├── tests/
+│   └── 123vendas.Unit/              # Service and handler unit tests
+├── docker-compose.yml
+├── Dockerfile
+└── 123vendas-server.slnx
+```
+
+## Domain Model
+
+| Entity | Description |
+|--------|-------------|
+| `Branch` | Physical store location with name, address, phone |
+| `Product` | Catalog product with title, category, price, rating |
+| `BranchProduct` | Per-branch inventory: stock quantity, localized pricing |
+| `Cart` | Shopping cart tied to a user |
+| `CartProduct` | Items inside a cart with quantity |
+| `Sale` | Transaction with status (Created/Canceled), total amount |
+| `SaleItem` | Individual line item with sequence, unit price, discount, cancellation |
+| `User` | Account with email, role (Customer/Manager/Admin), status |
+
+All entities share `Id`, `IsDeleted`, `CreatedAt`, and `UpdatedAt` from `BaseEntity`.
+
+### Business Rules Implemented
+
+- **Quantity limits**: Max 20 identical items per sale
+- **Automatic discounts**: 4+ items → 10%, 9+ → 15%, 20+ → 20%
+- **Stock validation**: Sale rejected if branch stock is insufficient
+- **Partial cancellation**: Individual sale items can be cancelled without voiding the sale
+- **Product sync**: Updating a product title/category propagates to all `BranchProduct` entries via `ExecuteUpdateAsync`
+
+## API Endpoints
+
+All endpoints are versioned under `/v1/`. Protected routes require JWT with `ManagerOnly` policy.
+
+| Resource | Method | Route | Auth |
+|----------|--------|-------|------|
+| Auth | POST | `/v1/api/auth` | Public |
+| Branches | GET | `/v1/api/branches` | Public |
+| Branches | GET | `/v1/api/branches/{id}` | Public |
+| Branches | POST | `/v1/api/branches` | Manager |
+| Branches | PUT | `/v1/api/branches/{id}` | Manager |
+| Branches | DELETE | `/v1/api/branches/{id}` | Manager |
+| BranchProducts | GET | `/v1/api/branch-products` | Public |
+| BranchProducts | GET | `/v1/api/branch-products/{id}` | Public |
+| BranchProducts | POST | `/v1/api/branch-products` | Manager |
+| BranchProducts | PUT | `/v1/api/branch-products/{id}` | Manager |
+| BranchProducts | DELETE | `/v1/api/branch-products/{id}` | Manager |
+| Products | GET | `/v1/api/products` | Public |
+| Products | GET | `/v1/api/products/categories` | Public |
+| Products | GET | `/v1/api/products/{id}` | Public |
+| Products | GET | `/v1/api/products/category/{category}` | Public |
+| Products | POST | `/v1/api/products` | Manager |
+| Products | PUT | `/v1/api/products/{id}` | Manager |
+| Products | DELETE | `/v1/api/products/{id}` | Manager |
+| Carts | GET | `/v1/api/carts` | Public |
+| Carts | GET | `/v1/api/carts/{id}` | Public |
+| Carts | POST | `/v1/api/carts` | Public |
+| Carts | PUT | `/v1/api/carts/{id}` | Public |
+| Carts | DELETE | `/v1/api/carts/{id}` | Public |
+| Sales | GET | `/v1/api/sales` | Public |
+| Sales | GET | `/v1/api/sales/{id}` | Public |
+| Sales | POST | `/v1/api/sales` | Manager |
+| Sales | PUT | `/v1/api/sales/{id}` | Manager |
+| Sales | DELETE | `/v1/api/sales/{id}` | Manager |
+| Sales | PUT | `/v1/api/sales/{id}/cancel` | Public |
+| Sales | GET | `/v1/api/sales/{id}/items/{sequence}` | Public |
+| Sales | PUT | `/v1/api/sales/{id}/items/{sequence}/cancel` | Public |
+| Users | GET | `/v1/api/users/{id}` | Public |
+| Users | POST | `/v1/api/users` | Public |
+| Users | DELETE | `/v1/api/users/{id}` | Manager |
+
+## Event-Driven Integration
+
+Sales events are published to a RabbitMQ direct exchange (`ex_sale`) so downstream services can react independently:
+
+| Event | Routing Key | Trigger |
+|-------|-------------|---------|
+| `SaleCreatedEvent` | `SaleCreatedEvent` | New sale registered |
+| `SaleUpdatedEvent` | `SaleUpdatedEvent` | Existing sale modified |
+| `SaleCancelledEvent` | `SaleCancelledEvent` | Sale fully cancelled |
+| `SaleItemCancelledEvent` | `SaleItemCancelledEvent` | Single item cancelled |
+
+### Event Payloads
+
+**SaleCreatedEvent**
+
+```json
+{
+    "Id": 1,
+    "Date": "2024-10-24T14:00:00Z"
+}
+```
+
+**SaleUpdatedEvent**
+
+```json
+{
+    "Id": 1,
+    "UpdatedAt": "2024-10-24T16:00:00Z"
+}
+```
+
+**SaleCancelledEvent**
+
+```json
+{
+    "Id": 1,
+    "CancelledAt": "2024-10-24T15:30:00Z"
+}
+```
+
+**SaleItemCancelledEvent**
+
+```json
+{
+    "SaleId": 1,
+    "SaleItemId": 2,
+    "Sequence": 1,
+    "CancelledAt": "2024-10-24T15:00:00Z"
+}
+```
+
+Consumers can bind their own queues to specific routing keys, picking up only the events they care about.
+
+## Database
+
+PostgreSQL with EF Core. Schema is auto-created on startup via `Database.EnsureCreated()`. Entity configurations are modular, each implementing `IEntityTypeConfiguration<T>`.
 
 ```csharp
 public PostgreDbContext(DbContextOptions<PostgreDbContext> options) : base(options)
@@ -82,157 +215,89 @@ public PostgreDbContext(DbContextOptions<PostgreDbContext> options) : base(optio
 }
 ```
 
-## Event Architecture: Integration with RabbitMQ
+![Database Diagram](https://github.com/user-attachments/assets/2bbb0886-3591-4ead-bed4-2d9dc7111b71)
 
-The application integrates with **RabbitMQ** using a Pub/Sub architecture, allowing distributed and independent processing of sales events. The exchange **ex_sale** (type **direct**) enables consumers to create custom queues and bind to specific routing keys for the events they are interested in.
+A seed system populates initial data (users, branches, products, carts, sales) when `SEED_DATABASE_FLAG=true`. Each seeder checks for existing records before inserting.
 
-### Event Details
+## Running with Docker
 
-* **SaleCancelledEvent**
-
-  * **Routing Key**: `SaleCancelledEvent`
-  * **Description**: Fired when a sale is canceled.
-  * **Sample Payload**:
-
-    ```json
-    {
-        "Id": 1,
-        "CancelledAt": "2024-10-24T15:30:00Z"
-    }
-    ```
-
-* **SaleCreatedEvent**
-
-  * **Routing Key**: `SaleCreatedEvent`
-  * **Description**: Fired when a new sale is created.
-  * **Sample Payload**:
-
-    ```json
-    {
-        "Id": 1,
-        "Date": "2024-10-24T14:00:00Z"
-    }
-    ```
-
-* **SaleItemCancelledEvent**
-
-  * **Routing Key**: `SaleItemCancelledEvent`
-  * **Description**: Fired when a specific item of a sale is canceled.
-  * **Sample Payload**:
-
-    ```json
-    {
-        "SaleId": 1,
-        "SaleItemId": 2,
-        "Sequence": 1,
-        "CancelledAt": "2024-10-24T15:00:00Z"
-    }
-    ```
-
-* **SaleUpdatedEvent**
-
-  * **Routing Key**: `SaleUpdatedEvent`
-  * **Description**: Fired when an existing sale is updated.
-  * **Sample Payload**:
-
-    ```json
-    {
-        "Id": 1,
-        "UpdatedAt": "2024-10-24T16:00:00Z"
-    }
-    ```
-
-This architecture ensures that each service consumes only relevant events, optimizing performance and easing scalability.
-
-## Running the Project
-
-### Option 1: Docker Compose (Recommended)
-
-The project includes a `docker-compose.yml` that spins up PostgreSQL, RabbitMQ, and the API with all environment variables pre-configured:
+The fastest way to get the project running — one command spins up PostgreSQL, RabbitMQ, and the API with everything pre-configured:
 
 ```bash
 docker compose up --build
 ```
 
-The API will be available at `http://localhost:8080`, and Swagger UI at `http://localhost:8080/swagger`.
+That's it. The compose file handles:
+- PostgreSQL 17 with health checks
+- RabbitMQ 4 with management UI
+- API build, dependency ordering, and health checks
+- Database seeding (`SEED_DATABASE_FLAG=true`)
 
-A health check endpoint is available at `http://localhost:8080/health`.
+Once running:
 
-RabbitMQ Management UI is available at `http://localhost:15672` (guest/guest).
+| Service | URL |
+|---------|-----|
+| Swagger UI | http://localhost:8080/swagger |
+| Health Check | http://localhost:8080/health |
+| RabbitMQ Management | http://localhost:15672 (guest/guest) |
 
-### Option 2: Local Execution
+## Running Locally
 
-To run the project locally, you need to configure the following environment variables, which define behavior and connections to the external services used by the application. **Note:** For local execution, these variables are configured in the `launchSettings.json` file.
+You'll need PostgreSQL and RabbitMQ running on your machine. Configure the connection details in `src/123vendas.Api/Properties/launchSettings.json`:
 
 ```json
 "environmentVariables": {
   "ASPNETCORE_ENVIRONMENT": "Development",
   "JWT_SECRETKEY": "dR8!v9Kp@zL3xWq#N5gT7mYb$FcJ2sV0",
-  "POSTGRES_CONNECTION_STRING": "",
-  "RABBITMQ_HOSTNAME": "",
-  "RABBITMQ_USERNAME": "",
-  "RABBITMQ_VIRTUALHOST": "",
-  "RABBITMQ_PASSWORD": "",
-  "SEED_DATABASE_FLAG": "false"
+  "POSTGRES_CONNECTION_STRING": "Host=localhost;Port=5432;Database=vendas;Username=postgres;Password=postgres",
+  "RABBITMQ_HOSTNAME": "localhost",
+  "RABBITMQ_USERNAME": "guest",
+  "RABBITMQ_VIRTUALHOST": "/",
+  "RABBITMQ_PASSWORD": "guest",
+  "SEED_DATABASE_FLAG": "true",
+  "LOG_LEVEL": "Information"
 }
 ```
 
-### Description of Each Variable
-
-* **ASPNETCORE_ENVIRONMENT**: Defines the environment in which the application will run (for example, Development, Staging, or Production). This influences specific configurations like logging and error details.
-* **JWT_SECRETKEY**: Secret key used to sign and validate JWT tokens, ensuring the integrity and security of the authentication mechanism.
-* **POSTGRES_CONNECTION_STRING**: Connection string for the Postgres database, configuring server address, database name, access credentials, and other connection options.
-* **RABBITMQ_HOSTNAME**: Hostname or IP address of the RabbitMQ server, used to publish and consume events.
-* **RABBITMQ_USERNAME**: Username for authentication on the RabbitMQ server.
-* **RABBITMQ_VIRTUALHOST**: Virtual host in RabbitMQ, allowing logical separation of environments or applications on the same server.
-* **RABBITMQ_PASSWORD**: Password corresponding to the user defined to access RabbitMQ.
-* **SEED_DATABASE_FLAG**: Flag used to control the execution of initial data seeds in the database, useful for development and testing environments.
-* **LOG_LEVEL**: Defines the minimum log level for Serilog (e.g., Information, Warning, Error, Debug).
-
-> **Notes:**
->
-> * **Postgres**: Make sure Postgres is installed and properly configured on your machine.
-> * **PostgreDbContext**: The constructor of `PostgreDbContext` contains the call `base.Database.EnsureCreated();`, ensuring the database will be created automatically if it does not exist.
-> * **JWT Secret Key**: The JWT secret key can be changed as needed in the `launchSettings.json` file.
-
-### Steps to Start the Project (Local)
-
-1. Clone the repository:
-
-   ```bash
-   git clone https://github.com/LucasFernandes0101/123sales-server.git
-   ```
-2. Navigate to the project folder:
-
-   ```bash
-   cd 123sales-server
-   ```
-3. Run the project:
-
-   ```bash
-   dotnet run --project src/123vendas.Api
-   ```
-
-### Running Tests
-
-To run the unit tests:
+Then:
 
 ```bash
-dotnet test
+git clone https://github.com/LucasFernandes0101/123sales-api.git
+cd 123sales-api
+dotnet restore
+dotnet run --project src/123vendas.Api
 ```
 
-To run tests with coverage (if configured):
+### Environment Variables
+
+| Variable | Description |
+|----------|-------------|
+| `ASPNETCORE_ENVIRONMENT` | Runtime environment (Development, Staging, Production) |
+| `JWT_SECRETKEY` | Symmetric key for signing JWT tokens |
+| `POSTGRES_CONNECTION_STRING` | Npgsql connection string |
+| `RABBITMQ_HOSTNAME` | RabbitMQ broker hostname |
+| `RABBITMQ_USERNAME` | RabbitMQ auth username |
+| `RABBITMQ_VIRTUALHOST` | RabbitMQ virtual host |
+| `RABBITMQ_PASSWORD` | RabbitMQ auth password |
+| `SEED_DATABASE_FLAG` | Enables database seeding on startup |
+| `LOG_LEVEL` | Minimum Serilog log level (Information, Warning, Error, Debug) |
+
+## Testing
 
 ```bash
+# Run all tests
+dotnet test
+
+# Run with coverage
 dotnet test --collect:"XPlat Code Coverage"
 ```
 
-## Improvement Points
+Tests cover service layer logic (Branch, BranchProduct, Cart, Product, Sale) and MediatR handlers (Auth, Users). Mocks are handled by NSubstitute, fake data by Bogus, and assertions use a mix of FluentAssertions and Shouldly.
 
-To enhance the security, scalability, and maintainability of the project, consider the following points:
+## Roadmap
 
-* **Key Vault**: Move the JWT secret key, as well as database and RabbitMQ credentials, to a Key Vault. This way, sensitive information is managed securely.
-* **Centralized Configuration**: Adopt a centralized configuration manager to ease maintenance and deployment across different environments.
-* **Automated Tests**: Expand coverage for unit, functional, and integration tests to ensure system robustness and reliability.
-* **Monitoring and Logging**: Integrate advanced monitoring and logging tools to proactively identify and resolve issues.
-* **Pub/Sub Scalability**: Review and optimize the event architecture to support higher transaction volumes and multiple consumer services.
+- [ ] Move secrets to a key vault (AWS Secrets Manager / Azure Key Vault)
+- [ ] Add integration tests with Testcontainers
+- [ ] Implement a RabbitMQ consumer service as an event-driven example
+- [ ] Add OpenTelemetry tracing across services
+- [ ] Introduce a CI/CD pipeline with automated test + build gates
