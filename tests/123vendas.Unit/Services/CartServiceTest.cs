@@ -98,7 +98,8 @@ public class CartServiceTest
         var (repository, validator, service) = CreateDependencies();
 
         var carts = new CartMock().Generate(2);
-        repository.GetAsync(1, 10, Arg.Any<Expression<Func<Cart, bool>>>()).Returns(Task.FromResult(new PagedResult<Cart>(carts.Count(), carts)));
+        repository.GetAsync(1, 10, Arg.Any<Expression<Func<Cart, bool>>>())
+            .Returns(Task.FromResult(new PagedResult<Cart>(carts.Count, carts)));
 
         // Act
         var result = await service.GetAllAsync(null, null, null, null, 1, 10, null);

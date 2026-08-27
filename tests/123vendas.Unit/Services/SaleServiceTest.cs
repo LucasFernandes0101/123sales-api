@@ -32,7 +32,8 @@ public class SaleServiceTest
         var branchProduct = new BranchProduct { ProductId = saleMock.Items[0].ProductId, Price = 100, StockQuantity = 10, BranchId = saleMock.BranchId };
 
         repository.AddAsync(Arg.Any<Sale>()).Returns(saleMock);
-        branchProductRepository.GetAsync(1, 1, Arg.Any<Expression<Func<BranchProduct, bool>>>()).Returns(new PagedResult<BranchProduct>(1, [branchProduct]));
+        branchProductRepository.GetAsync(1, 1, Arg.Any<Expression<Func<BranchProduct, bool>>>())
+            .Returns(new PagedResult<BranchProduct>(1, [branchProduct]));
         validator.ValidateAsync(Arg.Any<Sale>()).Returns(new ValidationResult());
 
         var saleService = new SaleService(repository, branchProductRepository, validator, rabbitMQIntegration, logger);
@@ -49,7 +50,8 @@ public class SaleServiceTest
 
         await repository.Received(1).AddAsync(Arg.Is<Sale>(s => s.UserId == saleMock.UserId));
         await branchProductRepository.Received(1).UpdateAsync(Arg.Is<BranchProduct>(bp => bp.StockQuantity == 9));
-        await rabbitMQIntegration.Received(1).PublishMessageAsync(Arg.Is<SaleCreatedEvent>(e => e.Id == result.Id));
+        await rabbitMQIntegration.Received(1)
+            .PublishMessageAsync(Arg.Is<SaleCreatedEvent>(e => e.Id == result.Id));
     }
 
     [Fact(DisplayName = "Create Sale - Validation Failed")]
@@ -61,7 +63,8 @@ public class SaleServiceTest
         var saleMock = new SaleMock().Generate();
         var branchProducts = new BranchProductMock().Generate(1);
 
-        branchProductRepository.GetAsync(1, 1, Arg.Any<Expression<Func<BranchProduct, bool>>>()).Returns(Task.FromResult(new PagedResult<BranchProduct>(1, branchProducts)));
+        branchProductRepository.GetAsync(1, 1, Arg.Any<Expression<Func<BranchProduct, bool>>>())
+            .Returns(Task.FromResult(new PagedResult<BranchProduct>(1, branchProducts)));
         validator.ValidateAsync(Arg.Any<Sale>()).Returns(new ValidationResult(new List<ValidationFailure> {
             new("UserId", "User is required") }));
 
@@ -84,7 +87,8 @@ public class SaleServiceTest
         var saleMock = new SaleMock().Generate();
         var branchProduct = new BranchProduct { ProductId = saleMock.Items!.First().ProductId, Price = 100, StockQuantity = 0 };
 
-        branchProductRepository.GetAsync(1, 1, Arg.Any<Expression<Func<BranchProduct, bool>>>()).Returns(new PagedResult<BranchProduct>(1, [branchProduct]));
+        branchProductRepository.GetAsync(1, 1, Arg.Any<Expression<Func<BranchProduct, bool>>>())
+            .Returns(new PagedResult<BranchProduct>(1, [branchProduct]));
         validator.ValidateAsync(saleMock).Returns(new ValidationResult());
 
         // Act
@@ -103,7 +107,8 @@ public class SaleServiceTest
         var saleService = new SaleService(repository, branchProductRepository, validator, rabbitMQIntegration, logger);
         var saleMock = new SaleMock().Generate();
 
-        branchProductRepository.GetAsync(1, 1, Arg.Any<Expression<Func<BranchProduct, bool>>>()).Returns(new PagedResult<BranchProduct>(0, []));
+        branchProductRepository.GetAsync(1, 1, Arg.Any<Expression<Func<BranchProduct, bool>>>())
+            .Returns(new PagedResult<BranchProduct>(0, []));
         validator.ValidateAsync(saleMock).Returns(new ValidationResult());
 
         // Act
@@ -313,9 +318,11 @@ public class SaleServiceTest
         result.Items.Should().Contain(i => i.IsCancelled);
 
         var canceledItemPrice = sale.Items!.First().Price;
-        await repository.Received(1).UpdateAsync(Arg.Is<Sale>(s => s.TotalAmount == (oldSaleAmount - canceledItemPrice)));
+        await repository.Received(1)
+            .UpdateAsync(Arg.Is<Sale>(s => s.TotalAmount == (oldSaleAmount - canceledItemPrice)));
 
-        await rabbitMQIntegration.Received(1).PublishMessageAsync(Arg.Is<SaleItemCancelledEvent>(e => e.Sequence == sale.Items!.First().Sequence));
+        await rabbitMQIntegration.Received(1)
+            .PublishMessageAsync(Arg.Is<SaleItemCancelledEvent>(e => e.Sequence == sale.Items!.First().Sequence));
     }
 
     [Fact(DisplayName = "Cancel Sale Item - Sale Already Canceled")]
@@ -380,7 +387,8 @@ public class SaleServiceTest
         result.Should().NotBeNull();
         result.Status.Should().Be(SaleStatus.Canceled);
         await repository.Received(1).UpdateAsync(Arg.Is<Sale>(s => s.CancelledAt.HasValue));
-        await rabbitMQIntegration.Received(1).PublishMessageAsync(Arg.Is<SaleCancelledEvent>(e => e.Id == result.Id));
+        await rabbitMQIntegration.Received(1)
+            .PublishMessageAsync(Arg.Is<SaleCancelledEvent>(e => e.Id == result.Id));
     }
 
     [Fact(DisplayName = "Get All Sales - Valid Parameters")]
@@ -392,7 +400,8 @@ public class SaleServiceTest
 
         var saleService = new SaleService(repository, branchProductRepository, validator, rabbitMQIntegration, logger);
         var sales = new SaleMock().Generate(1);
-        repository.GetAsync(1, 10, Arg.Any<Expression<Func<Sale, bool>>>()).Returns(new PagedResult<Sale>(1, sales));
+        repository.GetAsync(1, 10, Arg.Any<Expression<Func<Sale, bool>>>())
+            .Returns(new PagedResult<Sale>(1, sales));
 
         // Act
         var result = await saleService.GetAllAsync(null, null, null, null, null, null);
@@ -414,7 +423,8 @@ public class SaleServiceTest
         saleMock.Status = SaleStatus.Created;
         repository.GetWithItemsByIdAsync(saleMock.Id).Returns(saleMock);
         repository.UpdateAsync(Arg.Any<Sale>()).Returns(saleMock);
-        validator.ValidateAsync(Arg.Is<Sale>(s => s.Id == saleMock.Id)).Returns(new ValidationResult());
+        validator.ValidateAsync(Arg.Is<Sale>(s => s.Id == saleMock.Id))
+            .Returns(new ValidationResult());
 
         var saleService = new SaleService(repository, branchProductRepository, validator, rabbitMQIntegration, logger);
 
@@ -424,7 +434,8 @@ public class SaleServiceTest
         // Assert
         result.Should().NotBeNull();
         await repository.Received(1).UpdateAsync(Arg.Is<Sale>(s => s.Id == saleMock.Id));
-        await rabbitMQIntegration.Received(1).PublishMessageAsync(Arg.Is<SaleUpdatedEvent>(e => e.Id == result.Id));
+        await rabbitMQIntegration.Received(1)
+            .PublishMessageAsync(Arg.Is<SaleUpdatedEvent>(e => e.Id == result.Id));
     }
 
     [Fact(DisplayName = "Delete Sale - Valid Request")]

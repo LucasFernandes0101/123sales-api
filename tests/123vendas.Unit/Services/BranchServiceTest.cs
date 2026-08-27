@@ -93,7 +93,8 @@ public class BranchServiceTest
         var (repository, _, service) = CreateDependencies();
         var branches = new BranchMock().Generate(2);
 
-        repository.GetAsync(1, 10, Arg.Any<Expression<Func<Branch, bool>>>()).Returns(new PagedResult<Branch>(branches.Count(), branches));
+        repository.GetAsync(1, 10, Arg.Any<Expression<Func<Branch, bool>>>())
+            .Returns(new PagedResult<Branch>(branches.Count, branches));
 
         // Act
         var result = await service.GetAllAsync(null, true, null, null, null, 1, 10);

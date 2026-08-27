@@ -95,7 +95,8 @@ public class BranchProductServiceTest
         // Arrange
         var (repository, productRepository, validator, service) = CreateDependencies();
         var branchProducts = new BranchProductMock().Generate(1);
-        repository.GetAsync(1, 10, Arg.Any<Expression<Func<BranchProduct, bool>>?>()).Returns(new PagedResult<BranchProduct>(1, branchProducts));
+        repository.GetAsync(1, 10, Arg.Any<Expression<Func<BranchProduct, bool>>?>())
+            .Returns(new PagedResult<BranchProduct>(1, branchProducts));
 
         // Act
         var result = await service.GetAllAsync(default, default, default, default, default, default);

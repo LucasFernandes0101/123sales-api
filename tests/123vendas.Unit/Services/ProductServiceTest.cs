@@ -158,7 +158,8 @@ public class ProductServiceTest
         await productService.UpdateAsync(mockProduct.Id, updatedProduct);
 
         // Assert
-        await branchProductRepository.Received(1).UpdateByProductIdAsync(mockProduct.Id, updatedProduct.Title, mockProduct.Category);
+        await branchProductRepository.Received(1)
+            .UpdateByProductIdAsync(mockProduct.Id, updatedProduct.Title, mockProduct.Category);
     }
 
     [Fact(DisplayName = "UpdateAsync_Should_Update_BranchProduct_When_Category_Changes")]
@@ -187,7 +188,8 @@ public class ProductServiceTest
         await productService.UpdateAsync(mockProduct.Id, updatedProduct);
 
         // Assert
-        await branchProductRepository.Received(1).UpdateByProductIdAsync(mockProduct.Id, mockProduct.Title!, updatedProduct.Category);
+        await branchProductRepository.Received(1)
+            .UpdateByProductIdAsync(mockProduct.Id, mockProduct.Title!, updatedProduct.Category);
     }
 
     private (IProductRepository productRepository, IBranchProductRepository branchProductRepository, IValidator<Product> validator, ProductService productService) CreateDependencies()
