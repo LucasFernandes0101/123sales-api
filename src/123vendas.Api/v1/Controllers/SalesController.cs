@@ -39,7 +39,7 @@ public class SalesController(ISaleService saleService) : ControllerBase
             request.OrderByClause,
             cancellationToken);
 
-        if (pagedResult?.Items is not null && pagedResult.Items.Any())
+        if (pagedResult?.Items is not null && pagedResult.Items.Count > 0)
             return Ok(
                 new PagedResponseDTO<SaleGetResponseDTO>(
                     pagedResult.Items.ToDTO(),

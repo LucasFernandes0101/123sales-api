@@ -174,7 +174,7 @@ public class SaleService(
             existingSale.BranchId = request.BranchId;
             existingSale.CancelledAt = request.CancelledAt;
 
-            if (request.Items is not null && request.Items.Any())
+            if (request.Items is not null && request.Items.Count > 0)
             {
                 existingSale.Items ??= [];
                 existingSale.Items.Clear();
@@ -369,7 +369,7 @@ public class SaleService(
         var result = await branchProductRepository.GetAsync(1, 1,
             p => p.IsActive && p.BranchId == branchId && p.ProductId == productId, default, cancellationToken);
 
-        return result.Items.Any()
+        return result.Items.Count > 0
             ? result.Items[0]
             : throw new NotFoundException($"Product ID {productId} not found or inactive in branch ID {branchId}.");
     }

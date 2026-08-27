@@ -38,7 +38,7 @@ public class BranchesController(IBranchService branchService) : ControllerBase
             request.OrderByClause,
             cancellationToken);
 
-        if (pagedResult?.Items is not null && pagedResult.Items.Any())
+        if (pagedResult?.Items is not null && pagedResult.Items.Count > 0)
             return Ok(
                 new PagedResponseDTO<BranchGetResponseDTO>(
                     pagedResult.Items.ToDTO(),
