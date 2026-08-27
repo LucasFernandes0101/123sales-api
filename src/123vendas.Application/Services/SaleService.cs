@@ -281,10 +281,9 @@ public class SaleService(
             ProductTitle = branchProduct.ProductTitle,
             UnitPrice = branchProduct.Price,
             Quantity = requestItem.Quantity,
-            Sequence = sequence
+            Sequence = sequence,
+            Discount = CalculateItemDiscount(requestItem)
         };
-
-        saleItem.Discount = CalculateItemDiscount(requestItem);
 
         saleItem.Price = CalculateItemPrice(saleItem);
 
