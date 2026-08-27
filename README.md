@@ -249,6 +249,17 @@ The API image uses a multi-stage Dockerfile: the SDK builds the project in the f
 
 > All services have `restart: unless-stopped`, so they survive machine reboots.
 
+### Test Users
+
+The database seed creates two users for testing the API:
+
+| Role | Email | Password | Access |
+|------|-------|----------|--------|
+| Admin | `admin@123vendas.com` | `admin123` | Full access (all endpoints) |
+| Manager | `vendedor@123vendas.com` | `seller123` | Manager-only endpoints (POST/PUT/DELETE on protected resources) |
+
+> Use the `POST /v1/api/auth` endpoint with one of the credentials above to obtain a JWT token. Include it in the `Authorization` header as a Bearer token for protected endpoints.
+
 ## Running Locally
 
 You'll need PostgreSQL and RabbitMQ running on your machine. Configure the connection details in `src/123vendas.Api/Properties/launchSettings.json`:
