@@ -9,4 +9,5 @@
   <Project Path="src\123vendas.Domain\123vendas.Domain.csproj" />
   <Project Path="src\123vendas.Infrastructure\123vendas.Infrastructure.csproj" />
   <Project Path="tests\123vendas.Unit\123vendas.Unit.csproj" />
+  <Project Path="tests\123vendas.Integration\123vendas.Integration.csproj" />
 </Solution>

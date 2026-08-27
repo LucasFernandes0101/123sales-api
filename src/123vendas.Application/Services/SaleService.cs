@@ -213,7 +213,7 @@ public class SaleService(
                 throw new SaleAlreadyCanceledException($"This sale is already canceled.");
 
             sale.Status = SaleStatus.Canceled;
-            sale.CancelledAt = DateTimeOffset.Now;
+            sale.CancelledAt = DateTimeOffset.UtcNow;
 
             await repository.UpdateAsync(sale, cancellationToken);
 
@@ -338,7 +338,7 @@ public class SaleService(
     private static void CancelItem(SaleItem saleItem)
     {
         saleItem.IsCancelled = true;
-        saleItem.CancelledAt = DateTimeOffset.Now;
+        saleItem.CancelledAt = DateTimeOffset.UtcNow;
     }
 
     private static decimal CalculateTotalAmount(List<SaleItem> items)

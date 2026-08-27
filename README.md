@@ -70,6 +70,7 @@ Dependencies flow inward: `Api → Application → Domain ← Infrastructure`. T
 | Assertions | FluentAssertions + Shouldly |
 | Mocking | NSubstitute |
 | Fake Data | Bogus |
+| Integration | WebApplicationFactory + Testcontainers (PostgreSQL, RabbitMQ) |
 
 ## Project Structure
 
@@ -81,7 +82,8 @@ Dependencies flow inward: `Api → Application → Domain ← Infrastructure`. T
 │   ├── 123vendas.Domain/            # Entities, enums, interfaces, validators
 │   └── 123vendas.Infrastructure/    # DbContext, repositories, RabbitMQ, seeders
 ├── tests/
-│   └── 123vendas.Unit/              # Service and handler unit tests
+│   ├── 123vendas.Unit/              # Service and handler unit tests
+│   └── 123vendas.Integration/       # Integration tests with Testcontainers
 ├── docker-compose.yml
 ├── Dockerfile
 └── 123vendas-server.slnx
@@ -305,18 +307,34 @@ dotnet run --project src/123vendas.Api
 
 ```bash
 # Run all tests
-dotnet test
+dotnet test 123vendas-server.slnx
+
+# Run only unit tests
+dotnet test 123vendas-server.slnx --filter "Category=Unit"
+
+# Run only integration tests
+dotnet test 123vendas-server.slnx --filter "Category=Integration"
 
 # Run with coverage
-dotnet test --collect:"XPlat Code Coverage"
+dotnet test 123vendas-server.slnx --collect:"XPlat Code Coverage"
 ```
 
-Tests cover service layer logic (Branch, BranchProduct, Cart, Product, Sale) and MediatR handlers (Auth, Users). Mocks are handled by NSubstitute, fake data by Bogus, and assertions use a mix of FluentAssertions and Shouldly.
+### Unit Tests
+
+Service layer logic (Branch, BranchProduct, Cart, Product, Sale) and MediatR handlers (Auth, Users). Mocks by NSubstitute, fake data by Bogus, assertions with FluentAssertions and Shouldly.
+
+### Integration Tests
+
+End-to-end tests against real PostgreSQL and RabbitMQ instances spun up via Testcontainers. Each test class inherits from `BaseIntegrationTest`, which automatically resets the database before every test method via `IAsyncLifetime`. JWT authentication is handled by `AuthHelper`, and HTTP clients are configured with extension methods for token management.
+
+- **149 tests** covering all controllers (Auth, Users, Branches, BranchProducts, Products, Carts, Sales)
+- Containers: `postgres:16-alpine`, `rabbitmq:3-management-alpine`
+- Database isolation: `ResetDatabaseAsync()` runs before each test via `BaseIntegrationTest.InitializeAsync`
 
 ## Roadmap
 
 - [ ] Move secrets to a key vault (AWS Secrets Manager / Azure Key Vault)
-- [ ] Add integration tests with Testcontainers
+- [x] Add integration tests with Testcontainers
 - [ ] Implement a RabbitMQ consumer service as an event-driven example
 - [ ] Add OpenTelemetry tracing across services
 - [ ] Introduce a CI/CD pipeline with automated test + build gates
