@@ -36,13 +36,11 @@ public abstract class BaseRepository<T>(PostgreDbContext dbContext) : IBaseRepos
         var totalRecords = await query.CountAsync(cancellationToken);
         var items = await query.Skip(count).Take(maxResults).ToListAsync(cancellationToken);
 
-        return new PagedResult<T>(totalRecords, items);
+        return new(totalRecords, items);
     }
 
     public async Task<T?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
-    {
-        return await _dbContext.Set<T>().FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
-    }
+        => await _dbContext.Set<T>().FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
 
     public async Task<T> AddAsync(T entity, CancellationToken cancellationToken = default)
     {
