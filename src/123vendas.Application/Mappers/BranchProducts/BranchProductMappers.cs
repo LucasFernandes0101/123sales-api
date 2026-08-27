@@ -1,7 +1,5 @@
 ﻿using _123vendas.Application.DTOs.BranchProducts;
 using _123vendas.Domain.Entities;
-using AutoMapper;
-using Microsoft.Extensions.Logging.Abstractions;
 using System.Diagnostics.CodeAnalysis;
 
 namespace _123vendas.Application.Mappers.BranchProducts;
@@ -9,24 +7,76 @@ namespace _123vendas.Application.Mappers.BranchProducts;
 [ExcludeFromCodeCoverage]
 public static class BranchProductMappers
 {
-    private static readonly IMapper _mapper = new MapperConfiguration(cfg =>
-        cfg.AddProfile<BranchProductMapperProfile>(), NullLoggerFactory.Instance).CreateMapper();
-
     public static List<BranchProductGetResponseDTO> ToDTO(this List<BranchProduct> entities)
-        => _mapper.Map<List<BranchProductGetResponseDTO>>(entities);
+        => entities.ConvertAll(e => new BranchProductGetResponseDTO
+        {
+            Id = e.Id,
+            CreatedAt = e.CreatedAt,
+            BranchId = e.BranchId,
+            ProductId = e.ProductId,
+            ProductTitle = e.ProductTitle,
+            ProductCategory = e.ProductCategory,
+            Price = e.Price,
+            IsActive = e.IsActive
+        });
 
     public static BranchProductGetDetailResponseDTO ToDetailDTO(this BranchProduct entity)
-        => _mapper.Map<BranchProductGetDetailResponseDTO>(entity);
+        => new()
+        {
+            Id = entity.Id,
+            CreatedAt = entity.CreatedAt,
+            UpdatedAt = entity.UpdatedAt,
+            BranchId = entity.BranchId,
+            ProductId = entity.ProductId,
+            ProductTitle = entity.ProductTitle,
+            ProductCategory = entity.ProductCategory,
+            Price = entity.Price,
+            StockQuantity = entity.StockQuantity,
+            IsActive = entity.IsActive
+        };
 
     public static BranchProductPostResponseDTO ToPostResponseDTO(this BranchProduct entity)
-        => entity is not null ? _mapper.Map<BranchProductPostResponseDTO>(entity) : new BranchProductPostResponseDTO();
+        => entity is not null
+            ? new() { Id = entity.Id }
+            : new();
 
     public static BranchProductPutResponseDTO ToPutResponseDTO(this BranchProduct entity)
-        => entity is not null ? _mapper.Map<BranchProductPutResponseDTO>(entity) : new BranchProductPutResponseDTO();
+        => entity is not null
+            ? new()
+            {
+                Id = entity.Id,
+                CreatedAt = entity.CreatedAt,
+                UpdatedAt = entity.UpdatedAt,
+                BranchId = entity.BranchId,
+                ProductId = entity.ProductId,
+                ProductTitle = entity.ProductTitle,
+                ProductCategory = entity.ProductCategory,
+                Price = entity.Price,
+                StockQuantity = entity.StockQuantity,
+                IsActive = entity.IsActive
+            }
+            : new();
 
     public static BranchProduct ToEntity(this BranchProductPostRequestDTO dto)
-        => dto is not null ? _mapper.Map<BranchProduct>(dto) : new BranchProduct();
+        => dto is not null
+            ? new()
+            {
+                BranchId = dto.BranchId,
+                ProductId = dto.ProductId,
+                Price = dto.Price,
+                StockQuantity = dto.StockQuantity,
+                IsActive = dto.IsActive
+            }
+            : new();
 
     public static BranchProduct ToEntity(this BranchProductPutRequestDTO dto)
-        => dto is not null ? _mapper.Map<BranchProduct>(dto) : new BranchProduct();
+        => dto is not null
+            ? new()
+            {
+                Id = dto.Id,
+                Price = dto.Price,
+                StockQuantity = dto.StockQuantity,
+                IsActive = dto.IsActive
+            }
+            : new();
 }
